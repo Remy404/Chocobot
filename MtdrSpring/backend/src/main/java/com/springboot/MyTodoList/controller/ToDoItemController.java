@@ -64,6 +64,21 @@ public class ToDoItemController {
             return new ResponseEntity<>(flag,HttpStatus.NOT_FOUND);
         }
     }
+    
+    @PatchMapping(value = "/todolist/{id}/description")
+public ResponseEntity updateToDoItemDescription(@PathVariable int id, @RequestBody String newDescription) {
+    try {
+        ToDoItem updatedItem = toDoItemService.updateToDoItemText(id, newDescription); // Aquí llamas al servicio
+        if (updatedItem != null) {
+            return new ResponseEntity<>(updatedItem, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    } catch (Exception e) {
+        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+}
+
 
 
 

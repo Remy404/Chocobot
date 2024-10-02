@@ -1,0 +1,14 @@
+C:\Users\LENOVO\Documents\Chocobot\ChocoBot-main\ChocoBot-main\MtdrSpring\backend\src\main\java\com\springboot\MyTodoList\repository\ToDoItemRepository.java
+C:\Users\LENOVO\Documents\Chocobot\ChocoBot-main\ChocoBot-main\MtdrSpring\backend\src\main\java\com\springboot\MyTodoList\util\BotLabels.java
+C:\Users\LENOVO\Documents\Chocobot\ChocoBot-main\ChocoBot-main\MtdrSpring\backend\src\main\java\com\springboot\MyTodoList\controller\ToDoItemController.java
+C:\Users\LENOVO\Documents\Chocobot\ChocoBot-main\ChocoBot-main\MtdrSpring\backend\src\main\java\com\springboot\MyTodoList\config\OracleConfiguration.java
+C:\Users\LENOVO\Documents\Chocobot\ChocoBot-main\ChocoBot-main\MtdrSpring\backend\src\main\java\com\springboot\MyTodoList\security\WebSecurityConfiguration.java
+C:\Users\LENOVO\Documents\Chocobot\ChocoBot-main\ChocoBot-main\MtdrSpring\backend\src\main\java\com\springboot\MyTodoList\util\BotHelper.java
+C:\Users\LENOVO\Documents\Chocobot\ChocoBot-main\ChocoBot-main\MtdrSpring\backend\src\main\java\com\springboot\MyTodoList\config\DbSettings.java
+C:\Users\LENOVO\Documents\Chocobot\ChocoBot-main\ChocoBot-main\MtdrSpring\backend\src\main\java\com\springboot\MyTodoList\controller\ToDoItemBotController.java
+C:\Users\LENOVO\Documents\Chocobot\ChocoBot-main\ChocoBot-main\MtdrSpring\backend\src\main\java\com\springboot\MyTodoList\util\BotCommands.java
+C:\Users\LENOVO\Documents\Chocobot\ChocoBot-main\ChocoBot-main\MtdrSpring\backend\src\main\java\com\springboot\MyTodoList\service\ToDoItemService.java
+C:\Users\LENOVO\Documents\Chocobot\ChocoBot-main\ChocoBot-main\MtdrSpring\backend\src\main\java\com\springboot\MyTodoList\util\BotMessages.java
+C:\Users\LENOVO\Documents\Chocobot\ChocoBot-main\ChocoBot-main\MtdrSpring\backend\src\main\java\com\springboot\MyTodoList\MyTodoListApplication.java
+C:\Users\LENOVO\Documents\Chocobot\ChocoBot-main\ChocoBot-main\MtdrSpring\backend\src\main\java\com\springboot\MyTodoList\model\ToDoItem.java
+C:\Users\LENOVO\Documents\Chocobot\ChocoBot-main\ChocoBot-main\MtdrSpring\backend\src\main\java\com\springboot\MyTodoList\config\CorsConfig.java
