@@ -52,5 +52,17 @@ public class ToDoItemService {
             return null;
         }
     }
+    public ToDoItem updateToDoItemText(int id, String newText) {
+        Optional<ToDoItem> toDoItemData = toDoItemRepository.findById(id);
+        if (toDoItemData.isPresent()) {
+            ToDoItem toDoItem = toDoItemData.get();
+            toDoItem.setDescription(newText); // Actualiza solo la descripción
+            return toDoItemRepository.save(toDoItem); // Guarda los cambios
+        } else {
+            return null; // Si no se encuentra el item, regresa null
+        }
+    }
+    
+    
 
 }
