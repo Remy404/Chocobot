@@ -35,6 +35,9 @@ function App() {
     const [items, setItems] = useState([]);
     // In case of an error during the API call:
     const [error, setError] = useState();
+    
+    const [editItemId, setEditItemId] = useState(null);
+    const [editItemText, setEditItemText] = useState('');
 
     function deleteItem(deleteId) {
       // console.log("deleteItem("+deleteId+")")
@@ -112,6 +115,29 @@ function App() {
         }
       });
     }
+    function enableEdit(item) {
+      setEditItemId(item.id);
+      setEditItemText(item.description);
+    }
+
+    function saveEdit() {
+      if (editItemId) {
+          modifyItem(editItemId, editItemText, false).then(() => {
+              setEditItemId(null);
+              setEditItemText('');
+              reloadOneIteam(editItemId);
+          }).catch(error => {
+              setError(error);
+          });
+      }
+    }
+
+  // Nueva función para manejar el evento de teclado
+    function handleKeyDown(event) {
+        if (event.key === 'Enter') {
+            saveEdit();
+        }
+    }
     /*
     To simulate slow network, call sleep before making API calls.
     const sleep = (milliseconds) => {
@@ -185,7 +211,7 @@ function App() {
     }
     return (
       <div className="App">
-        <h1>MY TODO LIST</h1>
+        <h1>ChocoBot</h1>
         <NewItem addItem={addItem} isInserting={isInserting}/>
         { error &&
           <p>Error: {error.message}</p>
@@ -200,10 +226,24 @@ function App() {
           {items.map(item => (
             !item.done && (
             <tr key={item.id}>
-              <td className="description">{item.description}</td>
+              <td className="description">
+              {editItemId === item.id ? (
+                <input
+                  type="text"
+                  value={editItemText}
+                  onChange={(e) => setEditItemText(e.target.value)}
+                  onKeyDown={handleKeyDown} // Maneja el evento de teclado aquí
+                  />
+                ) : (
+                  item.description
+                )}
+              </td>
               { /*<td>{JSON.stringify(item, null, 2) }</td>*/ }
               <td className="date"><Moment format="MMM Do hh:mm:ss">{item.createdAt}</Moment></td>
-              <td><Button variant="contained" className="DoneButton" onClick={(event) => toggleDone(event, item.id, item.description, !item.done)} size="small">
+              <td><Button variant="contained" className="DoneButton" onClick={(event) => enableEdit(item)} size="small">
+                    Edit
+                  </Button></td>
+              <td><Button variant="contained" className="EditButton" onClick={(event) => toggleDone(event, item.id, item.description, !item.done)} size="small">
                     Done
                   </Button></td>
             </tr>
