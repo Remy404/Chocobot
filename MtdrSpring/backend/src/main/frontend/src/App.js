@@ -18,6 +18,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { Button, TableBody, CircularProgress, Accordion, AccordionSummary, AccordionDetails, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Moment from 'react-moment';
+import Estadisticas from './components/Estadisticas'
 
 /* In this application we're using Function Components with the State Hooks
  * to manage the states. See the doc: https://reactjs.org/docs/hooks-state.html
@@ -42,7 +43,7 @@ function App() {
         if (response.ok) {
           return response;
         } else {
-          throw new Error('Something went wrong ...');
+          throw new Error('Something went wrong ...deleteItem');
         }
       })
       .then(
@@ -70,7 +71,7 @@ function App() {
           if (response.ok) {
             return response.json();
           } else {
-            throw new Error('Something went wrong ...');
+            throw new Error('Something went wrong ...reloadOneItem');
           }
         })
         .then(
@@ -101,7 +102,7 @@ function App() {
         if (response.ok) {
           return response;
         } else {
-          throw new Error('Something went wrong ...');
+          throw new Error('Something went wrong ... modifyItem');
         }
       });
     }
@@ -143,7 +144,7 @@ function App() {
           if (response.ok) {
             return response.json();
           } else {
-            throw new Error('Something went wrong ...');
+            throw new Error('Something went wrong ... useEffect');
           }
         })
         .then(
@@ -157,26 +158,41 @@ function App() {
           });
     }, []);
 
-    function addItem(text) {
+    function addItem(newItem) {  // newItem ahora es un objeto con 'item' y 'storypoints'
       setInserting(true);
-      var data = { description: text };
+      
+      // Estructura de datos con la descripción y los storypoints
+      var data = { 
+        description: newItem.item,      // Descripción del ítem
+        storypoints: newItem.storypoints,  // Puntos de historia
+        responsable: newItem.responsable
+      };
+    
       fetch(API_LIST, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(data),
-      }).then((response) => {
+        body: JSON.stringify(data),  // Enviar la descripción y los storypoints
+      })
+      .then((response) => {
         if (response.ok) {
           return response;
         } else {
-          throw new Error('Something went wrong ...');
+          throw new Error('Something went wrong ... addItem');
         }
-      }).then(
+      })
+      .then(
         (result) => {
           var id = result.headers.get('location');
-          var newItem = { "id": id, "description": text };
-          setItems([newItem, ...items]);
+          // Incluir 'storypoints' en el nuevo ítem
+          var newItemWithId = { 
+            "id": id, 
+            "description": newItem.item,  // Descripción
+            "storypoints": newItem.storypoints,  // Puntos de historia
+            "responsable": newItem.responsable
+          };
+          setItems([newItemWithId, ...items]);
           setInserting(false);
         },
         (error) => {
@@ -185,6 +201,7 @@ function App() {
         }
       );
     }
+    
 
     return (
       <div className="App">
@@ -198,7 +215,7 @@ function App() {
           <div id="maincontent">
             
             {/* Sección de Tareas pendientes */}
-            <h2>To Do</h2>
+            <h2>Tareas pendientes</h2>
             {items.filter(item => !item.done).map(item => (
               <Accordion key={item.id}>
                 <AccordionSummary
@@ -219,6 +236,12 @@ function App() {
                 </AccordionSummary>
                 <AccordionDetails>
                   <Typography>
+                    Storypoints: {item.storypoints} {/* Mostrar los Storypoints */}
+                  </Typography>
+                  <Typography>
+                    Responsable: {item.responsable}  {/* Mostrar el responsable */}
+                  </Typography>
+                  <Typography>
                     Creado el: <Moment format="MMM Do hh:mm:ss">{item.createdAt}</Moment>
                   </Typography>
                   <Button variant="contained" onClick={() => enableEdit(item)} size="small">
@@ -232,7 +255,7 @@ function App() {
             ))}
 
             {/* Sección de Tareas completadas */}
-            <h2>Completed tasks</h2>
+            <h2>Tareas completadas</h2>
             {items.filter(item => item.done).map(item => (
               <Accordion key={item.id}>
                 <AccordionSummary
@@ -244,10 +267,16 @@ function App() {
                 </AccordionSummary>
                 <AccordionDetails>
                   <Typography>
+                    Storypoints: {item.storypoints} {/* Mostrar los Storypoints */}
+                  </Typography>
+                  <Typography>
+                    Responsable: {item.responsable}  {/* Mostrar el responsable */}
+                  </Typography>
+                  <Typography>
                     Completada el: <Moment format="MMM Do hh:mm:ss">{item.createdAt}</Moment>
                   </Typography>
                   <Button variant="contained" onClick={(event) => toggleDone(event, item.id, item.description, !item.done)} size="small">
-                    Undone
+                    Undo
                   </Button>
                   <Button startIcon={<DeleteIcon />} variant="contained" onClick={() => deleteItem(item.id)} size="small">
                     Erase
@@ -255,6 +284,23 @@ function App() {
                 </AccordionDetails>
               </Accordion>
             ))}
+            <h2>Estadisticas</h2>
+            <Accordion>
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls="panel1bh-content"
+                id="panel1bh-header"
+              >
+                <Typography>Abrir Acordeón</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Typography>
+                  Sí
+                </Typography>
+                <Estadisticas />
+              </AccordionDetails>
+            </Accordion>
+            
           </div>
         }
       </div>
