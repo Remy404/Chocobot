@@ -21,8 +21,8 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .anyRequest().authenticated()   // Cualquier solicitud debe estar autenticada
                 .and()
             .formLogin()
-                .loginPage("/login")            // Página personalizada de login
-                .defaultSuccessUrl("/home", true) // Redirige a /home después de un login exitoso
+                // .loginPage("/login")           // Página personalizada de login
+                .defaultSuccessUrl("/", true) // Redirige a /home después de un login exitoso
                 .permitAll()
                 .and()
             .logout()
