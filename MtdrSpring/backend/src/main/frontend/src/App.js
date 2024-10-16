@@ -18,6 +18,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { Button, TableBody, CircularProgress, Accordion, AccordionSummary, AccordionDetails, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Moment from 'react-moment';
+import Estadisticas from './components/Estadisticas'
 
 /* In this application we're using Function Components with the State Hooks
  * to manage the states. See the doc: https://reactjs.org/docs/hooks-state.html
@@ -283,6 +284,23 @@ function App() {
                 </AccordionDetails>
               </Accordion>
             ))}
+            <h2>Estadisticas</h2>
+            <Accordion>
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls="panel1bh-content"
+                id="panel1bh-header"
+              >
+                <Typography>Abrir Acordeón</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Typography>
+                  Sí
+                </Typography>
+                <Estadisticas />
+              </AccordionDetails>
+            </Accordion>
+            
           </div>
         }
       </div>
