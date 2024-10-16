@@ -33,26 +33,36 @@ public class ToDoItemController {
     //@CrossOrigin
     @PostMapping(value = "/todolist")
     public ResponseEntity addToDoItem(@RequestBody ToDoItem todoItem) throws Exception{
-        ToDoItem td = toDoItemService.addToDoItem(todoItem);
-        HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.set("location",""+td.getID());
-        responseHeaders.set("Access-Control-Expose-Headers","location");
-        //URI location = URI.create(""+td.getID())
+        try {
+            ToDoItem td = toDoItemService.addToDoItem(todoItem);
+            HttpHeaders responseHeaders = new HttpHeaders();
+            responseHeaders.set("location", "" + td.getID());
+            responseHeaders.set("Access-Control-Expose-Headers", "location");
 
-        return ResponseEntity.ok()
-                .headers(responseHeaders).build();
+            return ResponseEntity.ok()
+                    .headers(responseHeaders).build();
+        } catch (IllegalArgumentException e) {
+            // Capturar estado inválido
+            return new ResponseEntity<>("Estado inválido: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
     //@CrossOrigin
     @PutMapping(value = "todolist/{id}")
-    public ResponseEntity updateToDoItem(@RequestBody ToDoItem toDoItem, @PathVariable int id){
-        try{
+    public ResponseEntity updateToDoItem(@RequestBody ToDoItem toDoItem, @PathVariable int id) {
+        try {
             ToDoItem toDoItem1 = toDoItemService.updateToDoItem(id, toDoItem);
             System.out.println(toDoItem1.toString());
-            return new ResponseEntity<>(toDoItem1,HttpStatus.OK);
-        }catch (Exception e){
+            return new ResponseEntity<>(toDoItem1, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            // Capturar estado inválido
+            return new ResponseEntity<>("Estado inválido: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
     }
+
     //@CrossOrigin
     @DeleteMapping(value = "todolist/{id}")
     public ResponseEntity<Boolean> deleteToDoItem(@PathVariable("id") int id){
