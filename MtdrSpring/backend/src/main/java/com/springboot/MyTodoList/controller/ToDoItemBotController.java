@@ -72,6 +72,11 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				row.add(BotLabels.HIDE_MAIN_SCREEN.getLabel());
 				keyboard.add(row);
 
+				row = new KeyboardRow();
+				row.add(BotLabels.CHOCOBOT.getLabel());
+				row.add(BotLabels.HIDE_MAIN_SCREEN.getLabel());
+				keyboard.add(row);
+
 				// Set the keyboard
 				keyboardMarkup.setKeyboard(keyboard);
 
@@ -216,6 +221,10 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					logger.error(e.getLocalizedMessage(), e);
 				}
 
+			} else if (messageTextFromTelegram.equals(BotCommands.CHOCOBOT_COMMAND.getCommand())
+			 || messageTextFromTelegram.equals(BotLabels.CHOCOBOT.getLabel())) {
+				// Devuelve el mensaje "chochoco" al presionar el comando
+				BotHelper.sendMessageToTelegram(chatId, BotMessages.CHOCOBOT.getMessage(), this);
 			}
 
 			else {

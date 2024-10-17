@@ -285,18 +285,16 @@ function App() {
               </Accordion>
             ))}
             <h2>Estadisticas</h2>
-            <Accordion>
+            <Accordion className="customAccordion">
               <AccordionSummary
                 expandIcon={<ExpandMoreIcon />}
                 aria-controls="panel1bh-content"
                 id="panel1bh-header"
               >
-                <Typography>Abrir Acordeón</Typography>
+                <Typography>Estadisticas</Typography>
               </AccordionSummary>
               <AccordionDetails>
-                <Typography>
-                  Sí
-                </Typography>
+                
                 <Estadisticas />
               </AccordionDetails>
             </Accordion>
