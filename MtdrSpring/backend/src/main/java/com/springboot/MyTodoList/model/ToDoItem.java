@@ -37,10 +37,13 @@ public class ToDoItem {
     @Column(name = "ESTIMATED_HOURS")
     Integer estimated_hours;
 
+    @Column(name = "EXPIRATION_TS")
+    OffsetDateTime expiration_ts;
+
     public ToDoItem() {
     }
 
-    public ToDoItem(int ID, String description, OffsetDateTime creation_ts, Boolean done, Integer storyPoints, String priority, String assigned, Integer estimated_hours) {
+    public ToDoItem(int ID, String description, OffsetDateTime creation_ts, Boolean done, Integer storyPoints, String priority, String assigned, Integer estimated_hours, OffsetDateTime expiration_ts) {
         this.ID = ID;
         this.description = description;
         this.creation_ts = creation_ts;
@@ -49,6 +52,7 @@ public class ToDoItem {
         this.priority = priority;
         this.assigned = assigned;
         this.estimated_hours = estimated_hours;
+        this.expiration_ts = expiration_ts;
     }
 
     public int getID() {
@@ -115,6 +119,14 @@ public class ToDoItem {
         this.estimated_hours = estimated_hours;
     }
 
+    public OffsetDateTime getExpiration_TS() {
+        return expiration_ts;
+    }
+
+    public void setExpiration_TS(OffsetDateTime expiration_ts) {
+        this.expiration_ts = expiration_ts;
+    }
+
     @Override
     public String toString() {
         return "ToDoItem{" +
@@ -125,7 +137,8 @@ public class ToDoItem {
                 ", storyPoints=" + storyPoints +
                 ", priority='" + priority + '\'' +
                 ", assigned='" + assigned + '\'' + 
-                ", estimated_hours: '" + estimated_hours +
+                ", estimated_hours='" + estimated_hours +
+                ", expiration_ts='" + expiration_ts +
                 '}';
     }
 }

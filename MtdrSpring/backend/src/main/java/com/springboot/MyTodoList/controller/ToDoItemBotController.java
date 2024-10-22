@@ -165,7 +165,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
                 for (ToDoItem item : activeItems) {
                     KeyboardRow currentRow = new KeyboardRow();
                     // currentRow.add(item.getDescription() + " (Story Points: " + item.getStoryPoints() + ", Priority: " + item.getPriority() + ")");
-					currentRow.add(item.getDescription() + " (Story Points: " + item.getStoryPoints() + ", Priority: " + item.getPriority() +  item.getAssigned() + item.getEstimated_Hours() + ")");
+					currentRow.add(item.getDescription() + " (Story Points: " + item.getStoryPoints() + ", Priority: " + item.getPriority() +  item.getAssigned() + item.getEstimated_Hours() + item.getExpiration_TS() + ")");
                     currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.DONE.getLabel());
                     keyboard.add(currentRow);
                 }
@@ -175,7 +175,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 
                 for (ToDoItem item : doneItems) {
                     KeyboardRow currentRow = new KeyboardRow();
-                    currentRow.add(item.getDescription() + " (Story Points: " + item.getStoryPoints() + ", Priority: " + item.getPriority() + item.getAssigned() + item.getEstimated_Hours() + ")");
+                    currentRow.add(item.getDescription() + " (Story Points: " + item.getStoryPoints() + ", Priority: " + item.getPriority() + item.getAssigned() + item.getEstimated_Hours() + item.getExpiration_TS() + ")");
                     currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.UNDO.getLabel());
                     currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.DELETE.getLabel());
                     keyboard.add(currentRow);
@@ -226,6 +226,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
                     newItem.setPriority("Low");
 					newItem.setAssigned(null);
 					newItem.setEstimated_Hours(null);
+					newItem.setExpiration_TS(null);
 
                     ResponseEntity entity = addToDoItem(newItem);
                     BotHelper.sendMessageToTelegram(chatId, BotMessages.NEW_ITEM_ADDED.getMessage(), this);

@@ -55,6 +55,7 @@ public class ToDoItemService {
             toDoItem.setPriority(td.getPriority());
             toDoItem.setAssigned(td.getAssigned());
             toDoItem.setEstimated_Hours(td.getEstimated_Hours());
+            toDoItem.setExpiration_TS(td.getExpiration_TS());
             return toDoItemRepository.save(toDoItem);
         } else {
             return null;
