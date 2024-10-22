@@ -1,7 +1,8 @@
 package com.springboot.MyTodoList.model;
 
-
 import javax.persistence.*;
+import javax.persistence.criteria.CriteriaBuilder.In;
+
 import java.time.OffsetDateTime;
 
 /*
@@ -14,20 +15,40 @@ public class ToDoItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     int ID;
+
     @Column(name = "DESCRIPTION")
     String description;
+
     @Column(name = "CREATION_TS")
     OffsetDateTime creation_ts;
-    @Column(name = "done")
-    boolean done;
-    public ToDoItem(){
 
+    @Column(name = "DONE")
+    Boolean done;
+
+    @Column(name = "STORYPOINTS") 
+    Integer storyPoints;
+
+    @Column(name = "PRIORITY")
+    String priority;
+
+    @Column(name = "ASSIGNED")
+    String assigned;
+    
+    @Column(name = "ESTIMATED_HOURS")
+    Integer estimated_hours;
+
+    public ToDoItem() {
     }
-    public ToDoItem(int ID, String description, OffsetDateTime creation_ts, boolean done) {
+
+    public ToDoItem(int ID, String description, OffsetDateTime creation_ts, Boolean done, Integer storyPoints, String priority, String assigned, Integer estimated_hours) {
         this.ID = ID;
         this.description = description;
         this.creation_ts = creation_ts;
         this.done = done;
+        this.storyPoints = storyPoints; 
+        this.priority = priority;
+        this.assigned = assigned;
+        this.estimated_hours = estimated_hours;
     }
 
     public int getID() {
@@ -54,12 +75,44 @@ public class ToDoItem {
         this.creation_ts = creation_ts;
     }
 
-    public boolean isDone() {
+    public Boolean isDone() {
         return done;
     }
 
-    public void setDone(boolean done) {
+    public void setDone(Boolean done) {
         this.done = done;
+    }
+
+    public Integer getStoryPoints() {
+        return storyPoints;
+    }
+
+    public void setStoryPoints(Integer storyPoints) {
+        this.storyPoints = storyPoints;
+    }
+
+    public String getPriority() {
+        return priority;
+    }
+
+    public void setPriority(String priority) {
+        this.priority = priority;
+    }
+
+    public String getAssigned() {
+        return assigned;
+    }
+
+    public void setAssigned(String assigned) {
+        this.assigned = assigned;
+    }
+
+    public Integer getEstimated_Hours() {
+        return estimated_hours;
+    }
+
+    public void setEstimated_Hours(Integer estimated_hours) {
+        this.estimated_hours = estimated_hours;
     }
 
     @Override
@@ -69,6 +122,10 @@ public class ToDoItem {
                 ", description='" + description + '\'' +
                 ", creation_ts=" + creation_ts +
                 ", done=" + done +
+                ", storyPoints=" + storyPoints +
+                ", priority='" + priority + '\'' +
+                ", assigned='" + assigned + '\'' + 
+                ", estimated_hours: '" + estimated_hours +
                 '}';
     }
 }
