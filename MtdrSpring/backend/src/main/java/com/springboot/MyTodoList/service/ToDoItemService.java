@@ -17,50 +17,59 @@ public class ToDoItemService {
 
     @Autowired
     private ToDoItemRepository toDoItemRepository;
-    public List<ToDoItem> findAll(){
+
+    public List<ToDoItem> findAll() {
         List<ToDoItem> todoItems = toDoItemRepository.findAll();
         return todoItems;
     }
-    public ResponseEntity<ToDoItem> getItemById(int id){
+
+    public ResponseEntity<ToDoItem> getItemById(int id) {
         Optional<ToDoItem> todoData = toDoItemRepository.findById(id);
-        if (todoData.isPresent()){
+        if (todoData.isPresent()) {
             return new ResponseEntity<>(todoData.get(), HttpStatus.OK);
-        }else{
+        } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+  
     public ToDoItem addToDoItem(ToDoItem toDoItem){
         if (toDoItem.getEstado() == null || toDoItem.getEstado().isEmpty()) {
             toDoItem.setEstado("To Do");  // Valor por defecto si no se establece un estado
         }
         validateEstado(toDoItem.getEstado());
+  
         return toDoItemRepository.save(toDoItem);
     }
 
-    public boolean deleteToDoItem(int id){
-        try{
+    public boolean deleteToDoItem(int id) {
+        try {
             toDoItemRepository.deleteById(id);
             return true;
-        }catch(Exception e){
+        } catch (Exception e) {
             return false;
         }
     }
+  
     public ToDoItem updateToDoItem(int id, ToDoItem td) {
         Optional<ToDoItem> toDoItemData = toDoItemRepository.findById(id);
-        if(toDoItemData.isPresent()){
+        if (toDoItemData.isPresent()) {
             ToDoItem toDoItem = toDoItemData.get();
             toDoItem.setID(id);
             toDoItem.setCreation_ts(td.getCreation_ts());
             toDoItem.setDescription(td.getDescription());
             toDoItem.setDone(td.isDone());
-            
+            toDoItem.setStoryPoints(td.getStoryPoints());
+            toDoItem.setPriority(td.getPriority());
+            toDoItem.setAssigned(td.getAssigned());
+            toDoItem.setEstimated_Hours(td.getEstimated_Hours());
+ 
             if (td.getEstado() == null || td.getEstado().isEmpty()) {
                 toDoItem.setEstado("To Do");  // Valor por defecto si no se establece un estado
             } else {
                 validateEstado(td.getEstado());
                 toDoItem.setEstado(td.getEstado());  // Actualiza el campo estado
             }
-    
+
             return toDoItemRepository.save(toDoItem);
         } else {
             return null;
@@ -84,8 +93,4 @@ public class ToDoItemService {
             throw new IllegalArgumentException("Estado inválido: " + estado);
         }
     }
-    
-    
-    
-
 }
