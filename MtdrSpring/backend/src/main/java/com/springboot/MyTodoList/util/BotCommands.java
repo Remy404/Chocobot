@@ -6,6 +6,7 @@ public enum BotCommands {
 	HIDE_COMMAND("/hide"), 
 	TODO_LIST("/todolist"),
 	CHOCOBOT_COMMAND("/choco"), 
+	EDIT_COMMAND("/edit"), 
 	ADD_ITEM("/additem");
 
 	private String command;

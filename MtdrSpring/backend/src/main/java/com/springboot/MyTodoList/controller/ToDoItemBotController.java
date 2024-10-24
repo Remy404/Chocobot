@@ -4,6 +4,8 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.HashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,12 +43,19 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 		this.botName = botName;
 	}
 
+	private Map<Long, String> pendingDescriptions = new HashMap<>();
+    private Map<Long, Boolean> awaitingStorypoints = new HashMap<>();
+	private Map<Long, Boolean> awaitingResponsable = new HashMap<>();
+
 	@Override
 	public void onUpdateReceived(Update update) {
 
 		if (update.hasMessage() && update.getMessage().hasText()) {
 
 			String messageTextFromTelegram = update.getMessage().getText();
+			int messageTextFromTelegramStorypoints ;
+			
+
 			long chatId = update.getMessage().getChatId();
 
 			if (messageTextFromTelegram.equals(BotCommands.START_COMMAND.getCommand())
@@ -74,7 +83,6 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 
 				row = new KeyboardRow();
 				row.add(BotLabels.CHOCOBOT.getLabel());
-				row.add(BotLabels.HIDE_MAIN_SCREEN.getLabel());
 				keyboard.add(row);
 
 				// Set the keyboard
@@ -167,25 +175,29 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				List<ToDoItem> activeItems = allItems.stream().filter(item -> item.isDone() == false)
 						.collect(Collectors.toList());
 
-				for (ToDoItem item : activeItems) {
-
-					KeyboardRow currentRow = new KeyboardRow();
-					currentRow.add(item.getDescription());
-					currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.DONE.getLabel());
-					keyboard.add(currentRow);
-				}
-
-				List<ToDoItem> doneItems = allItems.stream().filter(item -> item.isDone() == true)
-						.collect(Collectors.toList());
-
-				for (ToDoItem item : doneItems) {
-					KeyboardRow currentRow = new KeyboardRow();
-					currentRow.add(item.getDescription());
-					currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.UNDO.getLabel());
-					currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.DELETE.getLabel());
-					keyboard.add(currentRow);
-				}
-
+						for (ToDoItem item : activeItems) {
+							KeyboardRow currentRow = new KeyboardRow();
+							currentRow.add(item.getDescription() + BotLabels.DASH.getLabel() + 
+										 item.getStorypoints() + BotLabels.DASH.getLabel() + 
+										 "Resp: " + item.getResponsable());
+							currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.DONE.getLabel());
+							currentRow.add(BotLabels.EDIT.getLabel());
+							keyboard.add(currentRow);
+						}
+		
+						List<ToDoItem> doneItems = allItems.stream().filter(item -> item.isDone() == true)
+								.collect(Collectors.toList());
+		
+						for (ToDoItem item : doneItems) {
+							KeyboardRow currentRow = new KeyboardRow();
+							currentRow.add(item.getDescription() + BotLabels.DASH.getLabel() + 
+										 item.getStorypoints() + BotLabels.DASH.getLabel() + 
+										 "Resp: " + item.getResponsable());
+							currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.UNDO.getLabel());
+							currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.DELETE.getLabel());
+							currentRow.add(BotLabels.EDIT.getLabel());
+							keyboard.add(currentRow);
+						}
 				// command back to main screen
 				KeyboardRow mainScreenRowBottom = new KeyboardRow();
 				mainScreenRowBottom.add(BotLabels.SHOW_MAIN_SCREEN.getLabel());
@@ -217,33 +229,104 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					// send message
 					execute(messageToTelegram);
 
+					pendingDescriptions.remove(chatId);
+                    awaitingStorypoints.remove(chatId);
+					awaitingResponsable.remove(chatId);
+
 				} catch (Exception e) {
 					logger.error(e.getLocalizedMessage(), e);
 				}
 
 			} else if (messageTextFromTelegram.equals(BotCommands.CHOCOBOT_COMMAND.getCommand())
 			 || messageTextFromTelegram.equals(BotLabels.CHOCOBOT.getLabel())) {
-				// Devuelve el mensaje "chochoco" al presionar el comando
+				// Devuelve el mensaje "chocochoco" al presionar el comando
 				BotHelper.sendMessageToTelegram(chatId, BotMessages.CHOCOBOT.getMessage(), this);
 			}
 
 			else {
 				try {
-					ToDoItem newItem = new ToDoItem();
-					newItem.setDescription(messageTextFromTelegram);
-					newItem.setCreation_ts(OffsetDateTime.now());
-					newItem.setDone(false);
-					ResponseEntity entity = addToDoItem(newItem);
+                    // Check if we're waiting for responsable
+                    if (awaitingResponsable.getOrDefault(chatId, false)) {
+                        // Create new item with description, storypoints, and responsable
+                        ToDoItem newItem = new ToDoItem();
+                        newItem.setDescription(pendingDescriptions.get(chatId));
+                        newItem.setStorypoints(Integer.parseInt(awaitingStorypoints.get(chatId).toString()));
+                        newItem.setResponsable(messageTextFromTelegram);
+                        newItem.setCreation_ts(OffsetDateTime.now());
+                        newItem.setDone(false);
 
-					SendMessage messageToTelegram = new SendMessage();
-					messageToTelegram.setChatId(chatId);
-					messageToTelegram.setText(BotMessages.NEW_ITEM_ADDED.getMessage());
+                        // Save the item
+                        ResponseEntity entity = addToDoItem(newItem);
 
-					execute(messageToTelegram);
-				} catch (Exception e) {
-					logger.error(e.getLocalizedMessage(), e);
-				}
-			}
+                        // Send confirmation message
+                        SendMessage messageToTelegram = new SendMessage();
+                        messageToTelegram.setChatId(chatId);
+                        messageToTelegram.setText("New item added:\nDescription: " + newItem.getDescription() + 
+                                                "\nStory points: " + newItem.getStorypoints() +
+                                                "\nResponsable: " + newItem.getResponsable());
+                        execute(messageToTelegram);
+
+                        // Clear the pending states
+                        pendingDescriptions.remove(chatId);
+                        awaitingStorypoints.remove(chatId);
+                        awaitingResponsable.remove(chatId);
+
+                    }
+                    // Check if we're waiting for storypoints
+                    else if (awaitingStorypoints.getOrDefault(chatId, false)) {
+                        try {
+                            int storypoints = Integer.parseInt(messageTextFromTelegram);
+                            if (storypoints < 0 || storypoints > 13) {
+                                SendMessage errorMessage = new SendMessage();
+                                errorMessage.setChatId(chatId);
+                                errorMessage.setText("Please enter a valid number between 0 and 13 for story points.");
+                                execute(errorMessage);
+                                return;
+                            }
+
+                            // Store storypoints and ask for responsable
+                            awaitingStorypoints.put(chatId, false);
+                            awaitingResponsable.put(chatId, true);
+
+                            SendMessage messageToTelegram = new SendMessage();
+                            messageToTelegram.setChatId(chatId);
+                            messageToTelegram.setText("Please enter the name of the responsible developer:");
+                            execute(messageToTelegram);
+
+                        } catch (NumberFormatException e) {
+                            SendMessage errorMessage = new SendMessage();
+                            errorMessage.setChatId(chatId);
+                            errorMessage.setText("Please enter a valid number for story points.");
+                            execute(errorMessage);
+                        }
+                    } else {
+                        // This is the first message - save description and ask for storypoints
+                        pendingDescriptions.put(chatId, messageTextFromTelegram);
+                        awaitingStorypoints.put(chatId, true);
+
+                        SendMessage messageToTelegram = new SendMessage();
+                        messageToTelegram.setChatId(chatId);
+                        messageToTelegram.setText("Please enter story points (0-13) for this task:");
+                        execute(messageToTelegram);
+                    }
+                } catch (Exception e) {
+                    logger.error(e.getLocalizedMessage(), e);
+                    try {
+                        // Clear all pending states in case of error
+                        pendingDescriptions.remove(chatId);
+                        awaitingStorypoints.remove(chatId);
+                        awaitingResponsable.remove(chatId);
+                        
+                        SendMessage errorMessage = new SendMessage();
+                        errorMessage.setChatId(chatId);
+                        errorMessage.setText("An error occurred. Please try again.");
+                        execute(errorMessage);
+                    } catch (TelegramApiException ex) {
+                        logger.error(ex.getLocalizedMessage(), ex);
+                    }
+                }
+            }
+			
 		}
 	}
 
