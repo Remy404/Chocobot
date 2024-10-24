@@ -43,7 +43,7 @@ public class ToDoItem {
     @Column(name = "EXPIRATION_TS")
     OffsetDateTime expiration_ts;
 
-    public ToDoItem(int ID, String description, OffsetDateTime creation_ts, Boolean done, Integer storyPoints, String priority, String assigned, Integer estimated_hours, OffsetDateTime expiration_ts) {
+    public ToDoItem(int ID, String description, OffsetDateTime creation_ts, Boolean done, Integer storyPoints, String priority, String assigned, Integer estimated_hours, OffsetDateTime expiration_ts, String estado) {
         this.ID = ID;
         this.description = description;
         this.creation_ts = creation_ts;
@@ -54,6 +54,9 @@ public class ToDoItem {
         this.assigned = assigned;
         this.estimated_hours = estimated_hours;
         this.expiration_ts = expiration_ts;
+    }
+
+    public ToDoItem() {
     }
 
     public int getID() {
@@ -94,6 +97,7 @@ public class ToDoItem {
 
     public void setEstado(String estado) {
         this.estado = estado;
+    }
 
     public Integer getStoryPoints() {
         return storyPoints;

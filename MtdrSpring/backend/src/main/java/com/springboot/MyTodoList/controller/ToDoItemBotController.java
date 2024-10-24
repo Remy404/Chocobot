@@ -44,49 +44,8 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 	}
 
 	private Map<Long, String> pendingDescriptions = new HashMap<>();
-  private Map<Long, Boolean> awaitingStorypoints = new HashMap<>();
+  	private Map<Long, Boolean> awaitingStorypoints = new HashMap<>();
 	private Map<Long, Boolean> awaitingResponsable = new HashMap<>();
-
-	@Override
-	public void onUpdateReceived(Update update) {
-
-		if (update.hasMessage() && update.getMessage().hasText()) {
-
-			String messageTextFromTelegram = update.getMessage().getText();
-			int messageTextFromTelegramStorypoints ;
-			
-
-			long chatId = update.getMessage().getChatId();
-
-			if (messageTextFromTelegram.equals(BotCommands.START_COMMAND.getCommand())
-					|| messageTextFromTelegram.equals(BotLabels.SHOW_MAIN_SCREEN.getLabel())) {
-
-				SendMessage messageToTelegram = new SendMessage();
-				messageToTelegram.setChatId(chatId);
-				messageToTelegram.setText(BotMessages.HELLO_MYTODO_BOT.getMessage());
-
-				ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
-				List<KeyboardRow> keyboard = new ArrayList<>();
-
-				// first row
-				KeyboardRow row = new KeyboardRow();
-				row.add(BotLabels.LIST_ALL_ITEMS.getLabel());
-				row.add(BotLabels.ADD_NEW_ITEM.getLabel());
-				// Add the first row to the keyboard
-				keyboard.add(row);
-
-				// second row
-				row = new KeyboardRow();
-				row.add(BotLabels.SHOW_MAIN_SCREEN.getLabel());
-				row.add(BotLabels.HIDE_MAIN_SCREEN.getLabel());
-				keyboard.add(row);
-
-				row = new KeyboardRow();
-				row.add(BotLabels.CHOCOBOT.getLabel());
-				keyboard.add(row);
-
-				// Set the keyboard
-				keyboardMarkup.setKeyboard(keyboard);
 
     @Override
     public void onUpdateReceived(Update update) {
@@ -182,8 +141,8 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 						for (ToDoItem item : activeItems) {
 							KeyboardRow currentRow = new KeyboardRow();
 							currentRow.add(item.getDescription() + BotLabels.DASH.getLabel() + 
-										 item.getStorypoints() + BotLabels.DASH.getLabel() + 
-										 "Resp: " + item.getResponsable());
+										 item.getStoryPoints() + BotLabels.DASH.getLabel() + 
+										 "Resp: " + item.getAssigned());
 							currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.DONE.getLabel());
 							currentRow.add(BotLabels.EDIT.getLabel());
 							keyboard.add(currentRow);
@@ -195,8 +154,8 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 						for (ToDoItem item : doneItems) {
 							KeyboardRow currentRow = new KeyboardRow();
 							currentRow.add(item.getDescription() + BotLabels.DASH.getLabel() + 
-										 item.getStorypoints() + BotLabels.DASH.getLabel() + 
-										 "Resp: " + item.getResponsable());
+										 item.getStoryPoints() + BotLabels.DASH.getLabel() + 
+										 "Resp: " + item.getAssigned());
 							currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.UNDO.getLabel());
 							currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.DELETE.getLabel());
 							currentRow.add(BotLabels.EDIT.getLabel());
@@ -254,8 +213,8 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
                         // Create new item with description, storypoints, and responsable
                         ToDoItem newItem = new ToDoItem();
                         newItem.setDescription(pendingDescriptions.get(chatId));
-                        newItem.setStorypoints(Integer.parseInt(awaitingStorypoints.get(chatId).toString()));
-                        newItem.setResponsable(messageTextFromTelegram);
+                        newItem.setStoryPoints(Integer.parseInt(awaitingStorypoints.get(chatId).toString()));
+                        newItem.setAssigned(messageTextFromTelegram);
                         newItem.setCreation_ts(OffsetDateTime.now());
                         newItem.setDone(false);
 
@@ -266,8 +225,8 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
                         SendMessage messageToTelegram = new SendMessage();
                         messageToTelegram.setChatId(chatId);
                         messageToTelegram.setText("New item added:\nDescription: " + newItem.getDescription() + 
-                                                "\nStory points: " + newItem.getStorypoints() +
-                                                "\nResponsable: " + newItem.getResponsable());
+                                                "\nStory points: " + newItem.getStoryPoints() +
+                                                "\nResponsable: " + newItem.getAssigned());
                         execute(messageToTelegram);
 
                         // Clear the pending states
