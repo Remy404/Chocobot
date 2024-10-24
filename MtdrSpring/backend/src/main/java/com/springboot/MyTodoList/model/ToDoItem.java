@@ -21,7 +21,10 @@ public class ToDoItem {
 
     @Column(name = "CREATION_TS")
     OffsetDateTime creation_ts;
-
+  
+    @Column(name = "ESTADO")
+    String estado;
+  
     @Column(name = "DONE")
     Boolean done;
 
@@ -40,14 +43,12 @@ public class ToDoItem {
     @Column(name = "EXPIRATION_TS")
     OffsetDateTime expiration_ts;
 
-    public ToDoItem() {
-    }
-
     public ToDoItem(int ID, String description, OffsetDateTime creation_ts, Boolean done, Integer storyPoints, String priority, String assigned, Integer estimated_hours, OffsetDateTime expiration_ts) {
         this.ID = ID;
         this.description = description;
         this.creation_ts = creation_ts;
         this.done = done;
+        this.estado = estado;
         this.storyPoints = storyPoints; 
         this.priority = priority;
         this.assigned = assigned;
@@ -86,6 +87,13 @@ public class ToDoItem {
     public void setDone(Boolean done) {
         this.done = done;
     }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
 
     public Integer getStoryPoints() {
         return storyPoints;
@@ -134,6 +142,7 @@ public class ToDoItem {
                 ", description='" + description + '\'' +
                 ", creation_ts=" + creation_ts +
                 ", done=" + done +
+                ", estado=" + estado +
                 ", storyPoints=" + storyPoints +
                 ", priority='" + priority + '\'' +
                 ", assigned='" + assigned + '\'' + 
