@@ -146,6 +146,21 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					logger.error(e.getLocalizedMessage(), e);
 				}
 
+			} else if (messageTextFromTelegram.indexOf(BotLabels.EDIT.getLabel()) != -1) {
+
+				String edit = messageTextFromTelegram.substring(0,
+						messageTextFromTelegram.indexOf(BotLabels.DASH.getLabel()));
+				Integer id = Integer.valueOf(edit);
+
+				try {
+
+					/* editToDoItem(id).getBody(); */
+					BotHelper.sendMessageToTelegram(chatId, BotMessages.ITEM_EDIT.getMessage(), this);
+
+				} catch (Exception e) {
+					logger.error(e.getLocalizedMessage(), e);
+				}
+
 			} else if (messageTextFromTelegram.equals(BotCommands.HIDE_COMMAND.getCommand())
 					|| messageTextFromTelegram.equals(BotLabels.HIDE_MAIN_SCREEN.getLabel())) {
 
@@ -181,7 +196,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 										 item.getStorypoints() + BotLabels.DASH.getLabel() + 
 										 "Resp: " + item.getResponsable());
 							currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.DONE.getLabel());
-							currentRow.add(BotLabels.EDIT.getLabel());
+							currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.EDIT.getLabel());
 							keyboard.add(currentRow);
 						}
 		
@@ -237,10 +252,10 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					logger.error(e.getLocalizedMessage(), e);
 				}
 
-			} else if (messageTextFromTelegram.equals(BotCommands.CHOCOBOT_COMMAND.getCommand())
-			 || messageTextFromTelegram.equals(BotLabels.CHOCOBOT.getLabel())) {
+			} else if (messageTextFromTelegram.equals(BotCommands.GRAPHICS_COMMAND.getCommand())
+			 || messageTextFromTelegram.equals(BotLabels.GRAPHICS.getLabel())) {
 				// Devuelve el mensaje "chocochoco" al presionar el comando
-				BotHelper.sendMessageToTelegram(chatId, BotMessages.CHOCOBOT.getMessage(), this);
+				BotHelper.sendMessageToTelegram(chatId, BotMessages.GRAPHICS.getMessage(), this);
 			}
 
 			else {
