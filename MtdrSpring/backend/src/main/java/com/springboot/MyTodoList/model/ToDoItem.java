@@ -1,6 +1,5 @@
 package com.springboot.MyTodoList.model;
 
-
 import javax.persistence.*;
 import java.time.OffsetDateTime;
 
@@ -14,30 +13,32 @@ public class ToDoItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     int ID;
+    
     @Column(name = "DESCRIPTION")
     String description;
+    
     @Column(name = "CREATION_TS")
     OffsetDateTime creation_ts;
+    
     @Column(name = "done")
     boolean done;
+    
     @Column(name = "STORYPOINTS")
     int storypoints;
+    
     @Column(name = "RESPONSABLE")
     String responsable;
-    @Column(name = "ESTADO")
-    String estado;
-    
-    public ToDoItem(){
 
+    public ToDoItem() {
     }
-    public ToDoItem(int ID, String description, OffsetDateTime creation_ts, boolean done, int storypoints, String responsable, String estado) {
+
+    public ToDoItem(int ID, String description, OffsetDateTime creation_ts, boolean done, int storypoints, String responsable) {
         this.ID = ID;
         this.description = description;
         this.creation_ts = creation_ts;
         this.done = done;
         this.storypoints = storypoints;
         this.responsable = responsable;
-        this.estado = estado;
     }
 
     public int getID() {
@@ -88,14 +89,6 @@ public class ToDoItem {
         this.responsable = responsable;
     }
 
-    public String getEstado() {
-        return estado;
-    }
-
-    public void setEstado(String estado) {
-        this.estado = estado;
-    }
-
     @Override
     public String toString() {
         return "ToDoItem{" +
@@ -103,9 +96,8 @@ public class ToDoItem {
                 ", description='" + description + '\'' +
                 ", creation_ts=" + creation_ts +
                 ", done=" + done +
-                ", storypoints=" + storypoints +  
-                ", storypoints=" + responsable +
-                ", estado=" + estado +
+                ", storypoints=" + storypoints +
+                ", responsable=" + responsable +
                 '}';
     }
 }
