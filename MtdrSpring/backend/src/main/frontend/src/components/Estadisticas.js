@@ -1,44 +1,49 @@
-import { Bar } from "react-chartjs-2";
+import { Pie } from "react-chartjs-2"; // Cambiamos el componente Bar por Pie
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
-  BarElement,
   Title,
   Tooltip,
   Legend,
+  ArcElement, // Registrar ArcElement para gráficos de pastel
 } from "chart.js";
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
+ChartJS.register(CategoryScale, LinearScale, Title, Tooltip, Legend, ArcElement);
 
 function Estadisticas() {
   const data = {
-    labels: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio"],
+    labels: ["Completadas", "Pendientes"],
     datasets: [
       {
-        label: "Ventas",
-        data: [12, 19, 3, 5, 2, 3], // Cambia estos datos según necesites
-        backgroundColor: "rgba(75, 192, 192, 0.6)", // Color de las barras
+        label: "Tareas",
+        data: [5,5], // Estos datos se adaptan a una gráfica de pastel
+        backgroundColor: [
+          "rgba(255, 99, 132, 0.6)", // Color para cada sección de la gráfica
+          "rgba(255, 159, 64, 0.6)"
+        ],
       },
     ],
   };
 
   const options = {
     responsive: true,
+    maintainAspectRatio: false, // Permitir que el gráfico se ajuste al tamaño del contenedor
     plugins: {
       legend: {
         position: "top",
       },
       title: {
         display: true,
-        text: "Gráfica de Ventas",
+        text: "Tareas pendientes - Tareas completadas",
       },
     },
   };
+
   return (
-    <div>
-      <h2>Gráfica de Ventas</h2>
-      <Bar data={data} options={options} />
+    <div style={{ width: '100%', maxWidth: '500px', height: '500px', overflow: 'hidden' }}>
+      <h2>Gráfica de Tareas pendientes - Tareas competadas</h2>
+      <Pie data={data} options={options} /> {/* Cambiamos de Bar a Pie */}
     </div>
   );
 }

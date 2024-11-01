@@ -133,3 +133,9 @@ body {
   button.DoneButton:hover {
     background-color: #D4CFCA;
   }
+
+  .customAccordion {
+    max-width: 500px; /* Ajusta el ancho */
+    max-height: 300px; /* Ajusta la altura */
+    overflow: auto; /* Añade scroll si es necesario */
+  }

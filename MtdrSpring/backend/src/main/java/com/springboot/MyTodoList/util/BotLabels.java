@@ -9,6 +9,8 @@ public enum BotLabels {
 	DONE("DONE"),
 	UNDO("UNDO"),
 	DELETE("DELETE"),
+	GRAPHICS("Graphics"), 
+	EDIT("Edit"), 
 	MY_TODO_LIST("MY TODO LIST"),
 	DASH("-");
 
