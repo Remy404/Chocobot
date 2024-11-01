@@ -1,11 +1,20 @@
 package com.springboot.MyTodoList.controller;
 
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.Map;
 import java.util.HashMap;
+
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,8 +53,23 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 	}
 
 	private Map<Long, String> pendingDescriptions = new HashMap<>();
-  	private Map<Long, Boolean> awaitingStorypoints = new HashMap<>();
-	private Map<Long, Boolean> awaitingResponsable = new HashMap<>();
+  	private Map<Long, Integer> awaitingStorypoints = new HashMap<>();
+	private Map<Long, String> awaitingResponsable = new HashMap<>();
+	private Map<Long, String> awaitingPriority = new HashMap<>();
+	private Map<Long, Integer> awaitingEstimatedHours = new HashMap<>();
+	private Map<Long, String> awaitingExpirationDate = new HashMap<>();
+
+	private OffsetDateTime parseDateString(String dateString) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm");
+
+		// Parsear a LocalDateTime
+		LocalDateTime localDate = LocalDateTime.parse(dateString, formatter);
+
+		// Convertir a OffsetDateTime (puedes especificar el offset deseado, en este caso UTC+0)
+		OffsetDateTime offsetDate = localDate.atOffset(ZoneOffset.UTC);
+
+		return offsetDate;
+	}
 
     @Override
     public void onUpdateReceived(Update update) {
@@ -140,9 +164,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 
 						for (ToDoItem item : activeItems) {
 							KeyboardRow currentRow = new KeyboardRow();
-							currentRow.add(item.getDescription() + BotLabels.DASH.getLabel() + 
-										 item.getStoryPoints() + BotLabels.DASH.getLabel() + 
-										 "Resp: " + item.getAssigned());
+							currentRow.add(item.getDescription() == null ? "No desc" : item.getDescription());
 							currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.DONE.getLabel());
 							currentRow.add(BotLabels.EDIT.getLabel());
 							keyboard.add(currentRow);
@@ -153,9 +175,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 		
 						for (ToDoItem item : doneItems) {
 							KeyboardRow currentRow = new KeyboardRow();
-							currentRow.add(item.getDescription() + BotLabels.DASH.getLabel() + 
-										 item.getStoryPoints() + BotLabels.DASH.getLabel() + 
-										 "Resp: " + item.getAssigned());
+							currentRow.add(item.getDescription() == null ? "No desc" : item.getDescription());
 							currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.UNDO.getLabel());
 							currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.DELETE.getLabel());
 							currentRow.add(BotLabels.EDIT.getLabel());
@@ -195,6 +215,9 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					pendingDescriptions.remove(chatId);
                     awaitingStorypoints.remove(chatId);
 					awaitingResponsable.remove(chatId);
+					awaitingPriority.remove(chatId);
+					awaitingEstimatedHours.remove(chatId);
+					awaitingExpirationDate.remove(chatId);
 
 				} catch (Exception e) {
 					logger.error(e.getLocalizedMessage(), e);
@@ -208,48 +231,112 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 
 			else {
 				try {
-                    // Check if we're waiting for responsable
-                    if (awaitingResponsable.getOrDefault(chatId, false)) {
-                        // Create new item with description, storypoints, and responsable
-                        ToDoItem newItem = new ToDoItem();
-                        newItem.setDescription(pendingDescriptions.get(chatId));
-                        newItem.setStoryPoints(Integer.parseInt(awaitingStorypoints.get(chatId).toString()));
-                        newItem.setAssigned(messageTextFromTelegram);
-                        newItem.setCreation_ts(OffsetDateTime.now());
+					if (awaitingExpirationDate.getOrDefault(chatId, null ) != null ){
+						// Create new item with description, storypoints, and responsable
+						ToDoItem newItem = new ToDoItem();
+						newItem.setDescription(pendingDescriptions.get(chatId));
+						newItem.setStoryPoints(awaitingStorypoints.get(chatId));
+						newItem.setAssigned(awaitingResponsable.get(chatId));
+						newItem.setPriority(awaitingPriority.get(chatId));
+						newItem.setEstimated_Hours(awaitingEstimatedHours.get(chatId));
+						newItem.setCreation_ts(OffsetDateTime.now());
                         newItem.setDone(false);
-
-                        // Save the item
+						
+						// Parse the date message date from the message and set it
+						try {
+							OffsetDateTime offsetDate = parseDateString(messageTextFromTelegram);
+							newItem.setExpiration_TS(offsetDate);
+						} catch (DateTimeParseException e) {
+							SendMessage errorMessage = new SendMessage();
+							errorMessage.setChatId(chatId);
+							errorMessage.setText("Please enter a valid expiration date with the following format YYYY/MM/DD HH:MM");
+							execute(errorMessage);
+							return;
+						}
+						
+						// Save the item
                         ResponseEntity entity = addToDoItem(newItem);
 
                         // Send confirmation message
                         SendMessage messageToTelegram = new SendMessage();
                         messageToTelegram.setChatId(chatId);
-                        messageToTelegram.setText("New item added:\nDescription: " + newItem.getDescription() + 
-                                                "\nStory points: " + newItem.getStoryPoints() +
-                                                "\nResponsable: " + newItem.getAssigned());
+                        messageToTelegram.setText("New item added:\nDescription: " + newItem.getDescription() 
+                                                + "\nStoryPoints: " + newItem.getStoryPoints()
+                                                + "\nResponsable: " + newItem.getAssigned()
+												+ "\nPriority:" + newItem.getPriority()
+												+ "\nEstimated Hours:" + newItem.getEstimated_Hours()
+												+ "\nExpiration Date:" + newItem.getEstimated_Hours());
                         execute(messageToTelegram);
 
-                        // Clear the pending states
-                        pendingDescriptions.remove(chatId);
+						pendingDescriptions.remove(chatId);
                         awaitingStorypoints.remove(chatId);
                         awaitingResponsable.remove(chatId);
+						awaitingPriority.remove(chatId);
+						awaitingEstimatedHours.remove(chatId);
+					}
+					else if (awaitingEstimatedHours.getOrDefault(chatId, null) != null) {
+						// Clear the pending states
+						awaitingExpirationDate.put(chatId, "");
 
+						SendMessage errorMessage = new SendMessage();
+						try {
+							int estimatedHours = Integer.parseInt(messageTextFromTelegram);
+							if (estimatedHours < 1) {
+								errorMessage.setChatId(chatId);
+								errorMessage.setText("The number of estimated hourse ha to be above 1. Please try again.");
+								execute(errorMessage);
+							}
+							
+							awaitingEstimatedHours.put(chatId, estimatedHours);
+						} catch (NumberFormatException e) {
+                            errorMessage.setChatId(chatId);
+                            errorMessage.setText("Please enter a number for the estimated hours");
+                            execute(errorMessage);
+                        }
+
+						SendMessage messageToTelegram = new SendMessage();
+						messageToTelegram.setChatId(chatId);
+						messageToTelegram.setText("Please enter the expiration date with the following format YYYY/MM/DD HH:MM");
+						execute(messageToTelegram);
+
+					}
+					else if (awaitingPriority.getOrDefault(chatId, null) != null) {
+						// Clear the pending states
+						awaitingEstimatedHours.put(chatId, 0);
+						awaitingPriority.put(chatId, messageTextFromTelegram);
+
+						SendMessage messageToTelegram = new SendMessage();
+						messageToTelegram.setChatId(chatId);
+						messageToTelegram.setText("Please enter the estimated hours for this task");
+						execute(messageToTelegram);
+				
+					}
+                    // Check if we're waiting for responsable
+                    else if (awaitingResponsable.getOrDefault(chatId, null) != null) {
+                        // Clear the pending states
+						awaitingPriority.put(chatId, "");
+						awaitingResponsable.put(chatId, messageTextFromTelegram);
+
+						SendMessage messageToTelegram = new SendMessage();
+						messageToTelegram.setChatId(chatId);
+						messageToTelegram.setText("Please enter the designated priority (low,mid,high) for this task");
+						execute(messageToTelegram);
                     }
                     // Check if we're waiting for storypoints
-                    else if (awaitingStorypoints.getOrDefault(chatId, false)) {
+                    else if (awaitingStorypoints.getOrDefault(chatId, null) != null) {
                         try {
                             int storypoints = Integer.parseInt(messageTextFromTelegram);
-                            if (storypoints < 0 || storypoints > 13) {
+                            if (storypoints < 0 || storypoints > 8) {
                                 SendMessage errorMessage = new SendMessage();
                                 errorMessage.setChatId(chatId);
-                                errorMessage.setText("Please enter a valid number between 0 and 13 for story points.");
+                                errorMessage.setText("Please enter a valid number between 1 and 8 for story points.");
                                 execute(errorMessage);
                                 return;
                             }
 
                             // Store storypoints and ask for responsable
-                            awaitingStorypoints.put(chatId, false);
-                            awaitingResponsable.put(chatId, true);
+                            awaitingStorypoints.put(chatId, storypoints);
+                            awaitingResponsable.put(chatId, "");
 
                             SendMessage messageToTelegram = new SendMessage();
                             messageToTelegram.setChatId(chatId);
@@ -262,14 +349,14 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
                             errorMessage.setText("Please enter a valid number for story points.");
                             execute(errorMessage);
                         }
-                    } else {
+					} else {
                         // This is the first message - save description and ask for storypoints
                         pendingDescriptions.put(chatId, messageTextFromTelegram);
-                        awaitingStorypoints.put(chatId, true);
+                        awaitingStorypoints.put(chatId, 0);
 
                         SendMessage messageToTelegram = new SendMessage();
                         messageToTelegram.setChatId(chatId);
-                        messageToTelegram.setText("Please enter story points (0-13) for this task:");
+                        messageToTelegram.setText("Please enter story points (1-8) for this task:");
                         execute(messageToTelegram);
                     }
                 } catch (Exception e) {
@@ -279,6 +366,8 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
                         pendingDescriptions.remove(chatId);
                         awaitingStorypoints.remove(chatId);
                         awaitingResponsable.remove(chatId);
+						awaitingPriority.remove(chatId);
+						awaitingEstimatedHours.remove(chatId);
                         
                         SendMessage errorMessage = new SendMessage();
                         errorMessage.setChatId(chatId);
