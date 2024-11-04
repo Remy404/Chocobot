@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Arrays;
 
-
 @Service
 public class ToDoItemService {
 
@@ -19,25 +18,21 @@ public class ToDoItemService {
     private ToDoItemRepository toDoItemRepository;
 
     public List<ToDoItem> findAll() {
-        List<ToDoItem> todoItems = toDoItemRepository.findAll();
-        return todoItems;
+        return toDoItemRepository.findAll();
     }
 
     public ResponseEntity<ToDoItem> getItemById(int id) {
         Optional<ToDoItem> todoData = toDoItemRepository.findById(id);
-        if (todoData.isPresent()) {
-            return new ResponseEntity<>(todoData.get(), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        return todoData.map(item -> new ResponseEntity<>(item, HttpStatus.OK))
+                       .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
-  
-    public ToDoItem addToDoItem(ToDoItem toDoItem){
+
+    public ToDoItem addToDoItem(ToDoItem toDoItem) {
         if (toDoItem.getEstado() == null || toDoItem.getEstado().isEmpty()) {
             toDoItem.setEstado("To Do");  // Valor por defecto si no se establece un estado
         }
         validateEstado(toDoItem.getEstado());
-  
+
         return toDoItemRepository.save(toDoItem);
     }
 
@@ -49,12 +44,12 @@ public class ToDoItemService {
             return false;
         }
     }
-  
+
     public ToDoItem updateToDoItem(int id, ToDoItem td) {
         Optional<ToDoItem> toDoItemData = toDoItemRepository.findById(id);
         if (toDoItemData.isPresent()) {
             ToDoItem toDoItem = toDoItemData.get();
-            toDoItem.setID(id);
+            // No se necesita establecer ID manualmente ya que es autogenerado
             toDoItem.setCreation_ts(td.getCreation_ts());
             toDoItem.setDescription(td.getDescription());
             toDoItem.setDone(td.isDone());
@@ -62,7 +57,7 @@ public class ToDoItemService {
             toDoItem.setPriority(td.getPriority());
             toDoItem.setAssigned(td.getAssigned());
             toDoItem.setEstimated_Hours(td.getEstimated_Hours());
- 
+
             if (td.getEstado() == null || td.getEstado().isEmpty()) {
                 toDoItem.setEstado("To Do");  // Valor por defecto si no se establece un estado
             } else {
@@ -75,7 +70,7 @@ public class ToDoItemService {
             return null;
         }
     }
-    
+
     public ToDoItem updateToDoItemText(int id, String newText) {
         Optional<ToDoItem> toDoItemData = toDoItemRepository.findById(id);
         if (toDoItemData.isPresent()) {
@@ -85,6 +80,11 @@ public class ToDoItemService {
         } else {
             return null; // Si no se encuentra el item, regresa null
         }
+    }
+
+    // Nuevo método para buscar tareas por nombre asignado
+    public List<ToDoItem> findByAssignedName(String assignedName) {
+        return toDoItemRepository.findByAssigned(assignedName);
     }
 
     private void validateEstado(String estado) {

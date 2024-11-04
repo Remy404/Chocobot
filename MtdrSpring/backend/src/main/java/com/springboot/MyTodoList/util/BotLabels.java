@@ -9,7 +9,7 @@ public enum BotLabels {
 	DONE("DONE"),
 	UNDO("UNDO"),
 	DELETE("DELETE"),
-	CHOCOBOT("chocolabel"), 
+	LOGIN("LOGIN"),
 	EDIT("Edit"), 
 	MY_TODO_LIST("MY TODO LIST"),
 	DASH("-");

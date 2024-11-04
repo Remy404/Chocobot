@@ -32,6 +32,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import com.springboot.MyTodoList.model.ToDoItem;
+import com.springboot.MyTodoList.repository.ToDoItemRepository;
 import com.springboot.MyTodoList.service.ToDoItemService;
 import com.springboot.MyTodoList.util.BotCommands;
 import com.springboot.MyTodoList.util.BotHelper;
@@ -53,86 +54,98 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 	}
 
 	private Map<Long, String> pendingDescriptions = new HashMap<>();
-  	private Map<Long, Integer> awaitingStorypoints = new HashMap<>();
+	private Map<Long, Integer> awaitingStorypoints = new HashMap<>();
 	private Map<Long, String> awaitingResponsable = new HashMap<>();
 	private Map<Long, String> awaitingPriority = new HashMap<>();
 	private Map<Long, Integer> awaitingEstimatedHours = new HashMap<>();
 	private Map<Long, String> awaitingExpirationDate = new HashMap<>();
+	private Map<Long, String> awaitingEstado = new HashMap<>();
+
+	private static final Map<String, String> allowedUsers = Map.of(
+			"A00833409@tec.mx", "Francisco",
+			"A01383541@tec.mx", "Facundo",
+			"A01174206@tec.mx", "Alejandro",
+			"A00831554@tec.mx", "Saúl");
 
 	private OffsetDateTime parseDateString(String dateString) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm");
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm");
 
 		// Parsear a LocalDateTime
 		LocalDateTime localDate = LocalDateTime.parse(dateString, formatter);
 
-		// Convertir a OffsetDateTime (puedes especificar el offset deseado, en este caso UTC+0)
+		// Convertir a OffsetDateTime (puedes especificar el offset deseado, en este
+		// caso UTC+0)
 		OffsetDateTime offsetDate = localDate.atOffset(ZoneOffset.UTC);
 
 		return offsetDate;
 	}
 
-    @Override
-    public void onUpdateReceived(Update update) {
+	@Override
+	public void onUpdateReceived(Update update) {
 
-        if (update.hasMessage() && update.getMessage().hasText()) {
+		if (update.hasMessage() && update.getMessage().hasText()) {
 
-            String messageTextFromTelegram = update.getMessage().getText();
-            long chatId = update.getMessage().getChatId();
+			String messageTextFromTelegram = update.getMessage().getText();
+			long chatId = update.getMessage().getChatId();
 
-            if (messageTextFromTelegram.equals(BotCommands.START_COMMAND.getCommand())
-                    || messageTextFromTelegram.equals(BotLabels.SHOW_MAIN_SCREEN.getLabel())) {
+			if (messageTextFromTelegram.equals(BotCommands.START_COMMAND.getCommand())
+					|| messageTextFromTelegram.equals(BotLabels.SHOW_MAIN_SCREEN.getLabel())) {
 
-                SendMessage messageToTelegram = new SendMessage();
-                messageToTelegram.setChatId(chatId);
-                messageToTelegram.setText(BotMessages.HELLO_MYTODO_BOT.getMessage());
+				SendMessage messageToTelegram = new SendMessage();
+				messageToTelegram.setChatId(chatId);
+				messageToTelegram.setText(BotMessages.HELLO_MYTODO_BOT.getMessage());
 
-                ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
-                List<KeyboardRow> keyboard = new ArrayList<>();
+				ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+				List<KeyboardRow> keyboard = new ArrayList<>();
 
-                // first row
-                KeyboardRow row = new KeyboardRow();
-                row.add(BotLabels.LIST_ALL_ITEMS.getLabel());
-                row.add(BotLabels.ADD_NEW_ITEM.getLabel());
-                // Add the first row to the keyboard
-                keyboard.add(row);
+				// first row
+				KeyboardRow row = new KeyboardRow();
+				row.add(BotLabels.LIST_ALL_ITEMS.getLabel());
+				row.add(BotLabels.ADD_NEW_ITEM.getLabel());
+				// Add the first row to the keyboard
+				keyboard.add(row);
 
-                // second row
-                row = new KeyboardRow();
-                row.add(BotLabels.SHOW_MAIN_SCREEN.getLabel());
-                row.add(BotLabels.HIDE_MAIN_SCREEN.getLabel());
-                keyboard.add(row);
+				// second row
+				row = new KeyboardRow();
+				row.add(BotLabels.SHOW_MAIN_SCREEN.getLabel());
+				row.add(BotLabels.HIDE_MAIN_SCREEN.getLabel());
+				keyboard.add(row);
 
-                // Set the keyboard
-                keyboardMarkup.setKeyboard(keyboard);
+				row = new KeyboardRow();
+				row.add(BotLabels.LOGIN.getLabel());
+				keyboard.add(row);
 
-                // Add the keyboard markup
-                messageToTelegram.setReplyMarkup(keyboardMarkup);
+				// Set the keyboard
+				keyboardMarkup.setKeyboard(keyboard);
 
-                try {
-                    execute(messageToTelegram);
-                } catch (TelegramApiException e) {
-                    logger.error(e.getLocalizedMessage(), e);
-                }
+				// Add the keyboard markup
+				messageToTelegram.setReplyMarkup(keyboardMarkup);
 
-            } else if (messageTextFromTelegram.indexOf(BotLabels.DONE.getLabel()) != -1) {
+				try {
+					execute(messageToTelegram);
+				} catch (TelegramApiException e) {
+					logger.error(e.getLocalizedMessage(), e);
+				}
 
-                String done = messageTextFromTelegram.substring(0,
-                        messageTextFromTelegram.indexOf(BotLabels.DASH.getLabel()));
-                Integer id = Integer.valueOf(done);
+			} else if (messageTextFromTelegram.indexOf(BotLabels.DONE.getLabel()) != -1) {
 
-                try {
+				String done = messageTextFromTelegram.substring(0,
+						messageTextFromTelegram.indexOf(BotLabels.DASH.getLabel()));
+				Integer id = Integer.valueOf(done);
 
-                    ToDoItem item = getToDoItemById(id).getBody();
-                    item.setDone(true);
-                    updateToDoItem(item, id);
-                    BotHelper.sendMessageToTelegram(chatId, BotMessages.ITEM_DONE.getMessage(), this);
+				try {
 
-                } catch (Exception e) {
-                    logger.error(e.getLocalizedMessage(), e);
-                }
+					ToDoItem item = getToDoItemById(id).getBody();
+					item.setDone(true);
+					updateToDoItem(item, id);
+					BotHelper.sendMessageToTelegram(chatId, BotMessages.ITEM_DONE.getMessage(), this);
 
-            } else if (messageTextFromTelegram.indexOf(BotLabels.UNDO.getLabel()) != -1) {
-              
+				} catch (Exception e) {
+					logger.error(e.getLocalizedMessage(), e);
+				}
+
+			} else if (messageTextFromTelegram.indexOf(BotLabels.UNDO.getLabel()) != -1) {
+
 			} else if (messageTextFromTelegram.equals(BotCommands.HIDE_COMMAND.getCommand())
 					|| messageTextFromTelegram.equals(BotLabels.HIDE_MAIN_SCREEN.getLabel())) {
 
@@ -162,25 +175,27 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				List<ToDoItem> activeItems = allItems.stream().filter(item -> item.isDone() == false)
 						.collect(Collectors.toList());
 
-						for (ToDoItem item : activeItems) {
-							KeyboardRow currentRow = new KeyboardRow();
-							currentRow.add(item.getDescription() == null ? "No desc" : item.getDescription());
-							currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.DONE.getLabel());
-							currentRow.add(BotLabels.EDIT.getLabel());
-							keyboard.add(currentRow);
-						}
-		
-						List<ToDoItem> doneItems = allItems.stream().filter(item -> item.isDone() == true)
-								.collect(Collectors.toList());
-		
-						for (ToDoItem item : doneItems) {
-							KeyboardRow currentRow = new KeyboardRow();
-							currentRow.add(item.getDescription() == null ? "No desc" : item.getDescription());
-							currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.UNDO.getLabel());
-							currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.DELETE.getLabel());
-							currentRow.add(BotLabels.EDIT.getLabel());
-							keyboard.add(currentRow);
-						}
+				for (ToDoItem item : activeItems) {
+					KeyboardRow currentRow = new KeyboardRow();
+					currentRow.add(item.getDescription() + " " + BotLabels.DASH.getLabel() + " " + item.getAssigned());
+					currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.DONE.getLabel());
+					currentRow.add(BotLabels.EDIT.getLabel());
+					keyboard.add(currentRow);
+				}
+
+				List<ToDoItem> doneItems = allItems.stream().filter(item -> item.isDone() == true)
+						.collect(Collectors.toList());
+
+				for (ToDoItem item : doneItems) {
+					KeyboardRow currentRow = new KeyboardRow();
+					currentRow.add(item.getDescription() + " " + BotLabels.DASH.getLabel() + " " + item.getAssigned());
+					// currentRow.add(item.getDescription() == null ? "No desc" :
+					// item.getDescription());
+					currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.UNDO.getLabel());
+					currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.DELETE.getLabel());
+					currentRow.add(BotLabels.EDIT.getLabel());
+					keyboard.add(currentRow);
+				}
 				// command back to main screen
 				KeyboardRow mainScreenRowBottom = new KeyboardRow();
 				mainScreenRowBottom.add(BotLabels.SHOW_MAIN_SCREEN.getLabel());
@@ -213,94 +228,200 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					execute(messageToTelegram);
 
 					pendingDescriptions.remove(chatId);
-                    awaitingStorypoints.remove(chatId);
+					awaitingStorypoints.remove(chatId);
 					awaitingResponsable.remove(chatId);
 					awaitingPriority.remove(chatId);
 					awaitingEstimatedHours.remove(chatId);
+					awaitingEstado.remove(chatId);
 					awaitingExpirationDate.remove(chatId);
 
 				} catch (Exception e) {
 					logger.error(e.getLocalizedMessage(), e);
 				}
 
-			} else if (messageTextFromTelegram.equals(BotCommands.CHOCOBOT_COMMAND.getCommand())
-			 || messageTextFromTelegram.equals(BotLabels.CHOCOBOT.getLabel())) {
-				// Devuelve el mensaje "chocochoco" al presionar el comando
-				BotHelper.sendMessageToTelegram(chatId, BotMessages.CHOCOBOT.getMessage(), this);
-			}
+			} else if (messageTextFromTelegram.equals(BotCommands.LOGIN_COMMAND.getCommand())
+					|| messageTextFromTelegram.equals(BotLabels.LOGIN.getLabel())) {
 
-			else {
+				SendMessage messageToTelegram = new SendMessage();
+				messageToTelegram.setChatId(chatId);
+				messageToTelegram.setText(
+						"Please enter your email followed by your name separated by a dash (e.g: example@email - name):");
+
 				try {
-					if (awaitingExpirationDate.getOrDefault(chatId, null ) != null ){
-						// Create new item with description, storypoints, and responsable
-						ToDoItem newItem = new ToDoItem();
-						newItem.setDescription(pendingDescriptions.get(chatId));
-						newItem.setStoryPoints(awaitingStorypoints.get(chatId));
-						newItem.setAssigned(awaitingResponsable.get(chatId));
-						newItem.setPriority(awaitingPriority.get(chatId));
-						newItem.setEstimated_Hours(awaitingEstimatedHours.get(chatId));
-						newItem.setCreation_ts(OffsetDateTime.now());
-                        newItem.setDone(false);
-						
-						// Parse the date message date from the message and set it
+					execute(messageToTelegram);
+				} catch (TelegramApiException e) {
+					logger.error(e.getLocalizedMessage(), e);
+				}
+			} else if (messageTextFromTelegram.contains("-")) {
+				String[] parts = messageTextFromTelegram.split(" - ");
+				if (parts.length == 2) {
+					String email = parts[0].trim();
+					String name = parts[1].trim();
+
+					// Verificar si el correo está en la lista de usuarios permitidos
+					if (allowedUsers.containsKey(email)) {
+						String registeredName = allowedUsers.get(email);
+
+						// Comparar el nombre ingresado con el nombre registrado
+						if (registeredName.equals(name)) {
+							SendMessage messageToTelegram = new SendMessage();
+							messageToTelegram.setChatId(chatId);
+
+							// Consultar tareas asignadas al usuario utilizando el servicio
+							List<ToDoItem> userTasks = toDoItemService.findByAssignedName(name);
+
+							// Crear el mensaje con las tareas
+							if (userTasks.isEmpty()) {
+								messageToTelegram.setText("You have no tasks assigned.");
+							} else {
+								StringBuilder tasksMessage = new StringBuilder("Welcome " + name + "!"
+										+ " You have successfully logged in." + "\n\nHere are your current task:\n\n");
+								for (ToDoItem item : userTasks) {
+									tasksMessage.append("- ")
+											.append(item.getDescription())
+											.append(" (Priority: ").append(item.getPriority()).append("  - ")
+											.append("  StoryPoints: ").append(item.getStoryPoints()).append("  - ")
+											.append("  Status: ").append(item.getEstado())
+											.append(")\n");
+								}
+								messageToTelegram.setText(tasksMessage.toString());
+							}
+
+							try {
+								execute(messageToTelegram);
+							} catch (TelegramApiException e) {
+								logger.error(e.getLocalizedMessage(), e);
+							}
+						} else {
+							// El nombre ingresado no coincide con el nombre registrado
+							SendMessage messageToTelegram = new SendMessage();
+							messageToTelegram.setChatId(chatId);
+							messageToTelegram.setText("Invalid credentials. Please enter a valid email and name.");
+
+							try {
+								execute(messageToTelegram);
+							} catch (TelegramApiException e) {
+								logger.error(e.getLocalizedMessage(), e);
+							}
+						}
+					} else {
+						// El correo no está en la lista de usuarios permitidos
+						SendMessage messageToTelegram = new SendMessage();
+						messageToTelegram.setChatId(chatId);
+						messageToTelegram.setText("Unauthorized user. Please use a registered email address.");
+
+						try {
+							execute(messageToTelegram);
+						} catch (TelegramApiException e) {
+							logger.error(e.getLocalizedMessage(), e);
+						}
+					}
+				} else {
+					// Mensaje de error si el formato es incorrecto
+					SendMessage messageToTelegram = new SendMessage();
+					messageToTelegram.setChatId(chatId);
+					messageToTelegram.setText(
+							"Invalid format. Please enter your email followed by your name separated by a dash (e.g: example@email - name).");
+
+					try {
+						execute(messageToTelegram);
+					} catch (TelegramApiException e) {
+						logger.error(e.getLocalizedMessage(), e);
+					}
+				}
+
+			} else {
+				try {
+					if (awaitingExpirationDate.getOrDefault(chatId, null) != null) {
+						// If awaiting expiration date, we process it and proceed to create the new item
 						try {
 							OffsetDateTime offsetDate = parseDateString(messageTextFromTelegram);
+							awaitingExpirationDate.put(chatId, offsetDate.toString());
+					
+							// Create new item with all fields collected
+							ToDoItem newItem = new ToDoItem();
+							newItem.setDescription(pendingDescriptions.get(chatId));
+							newItem.setStoryPoints(awaitingStorypoints.get(chatId));
+							newItem.setAssigned(awaitingResponsable.get(chatId));
+							newItem.setPriority(awaitingPriority.get(chatId));
+							newItem.setEstimated_Hours(awaitingEstimatedHours.get(chatId));
+							newItem.setEstado(awaitingEstado.get(chatId));
 							newItem.setExpiration_TS(offsetDate);
+							newItem.setCreation_ts(OffsetDateTime.now());
+							newItem.setDone(false);
+					
+							// Save the item
+							ResponseEntity entity = addToDoItem(newItem);
+					
+							// Send confirmation message
+							SendMessage messageToTelegram = new SendMessage();
+							messageToTelegram.setChatId(chatId);
+							messageToTelegram.setText("New item added:\nDescription: " + newItem.getDescription()
+									+ "\nStoryPoints: " + newItem.getStoryPoints()
+									+ "\nResponsable: " + newItem.getAssigned()
+									+ "\nPriority: " + newItem.getPriority()
+									+ "\nEstimated Hours: " + newItem.getEstimated_Hours()
+									+ "\nStatus: " + newItem.getEstado()
+									+ "\nExpiration Date: " + newItem.getExpiration_TS()
+									+ "\nCheck your pending tasks /todolist");
+							execute(messageToTelegram);
+					
+							// Clear all pending states
+							pendingDescriptions.remove(chatId);
+							awaitingStorypoints.remove(chatId);
+							awaitingResponsable.remove(chatId);
+							awaitingPriority.remove(chatId);
+							awaitingEstimatedHours.remove(chatId);
+							awaitingEstado.remove(chatId);
+							awaitingExpirationDate.remove(chatId);
+					
 						} catch (DateTimeParseException e) {
+							// If expiration date format is invalid
 							SendMessage errorMessage = new SendMessage();
 							errorMessage.setChatId(chatId);
 							errorMessage.setText("Please enter a valid expiration date with the following format YYYY/MM/DD HH:MM");
 							execute(errorMessage);
 							return;
 						}
-						
-						// Save the item
-                        ResponseEntity entity = addToDoItem(newItem);
 
-                        // Send confirmation message
-                        SendMessage messageToTelegram = new SendMessage();
-                        messageToTelegram.setChatId(chatId);
-                        messageToTelegram.setText("New item added:\nDescription: " + newItem.getDescription() 
-                                                + "\nStoryPoints: " + newItem.getStoryPoints()
-                                                + "\nResponsable: " + newItem.getAssigned()
-												+ "\nPriority:" + newItem.getPriority()
-												+ "\nEstimated Hours:" + newItem.getEstimated_Hours()
-												+ "\nExpiration Date:" + newItem.getEstimated_Hours());
-                        execute(messageToTelegram);
-
-						pendingDescriptions.remove(chatId);
-                        awaitingStorypoints.remove(chatId);
-                        awaitingResponsable.remove(chatId);
-						awaitingPriority.remove(chatId);
-						awaitingEstimatedHours.remove(chatId);
-					}
-					else if (awaitingEstimatedHours.getOrDefault(chatId, null) != null) {
+					} else if (awaitingEstado.getOrDefault(chatId, null) != null) {
 						// Clear the pending states
 						awaitingExpirationDate.put(chatId, "");
-
-						SendMessage errorMessage = new SendMessage();
-						try {
-							int estimatedHours = Integer.parseInt(messageTextFromTelegram);
-							if (estimatedHours < 1) {
-								errorMessage.setChatId(chatId);
-								errorMessage.setText("The number of estimated hourse ha to be above 1. Please try again.");
-								execute(errorMessage);
-							}
-							
-							awaitingEstimatedHours.put(chatId, estimatedHours);
-						} catch (NumberFormatException e) {
-                            errorMessage.setChatId(chatId);
-                            errorMessage.setText("Please enter a number for the estimated hours");
-                            execute(errorMessage);
-                        }
+						awaitingEstado.put(chatId, messageTextFromTelegram);
 
 						SendMessage messageToTelegram = new SendMessage();
 						messageToTelegram.setChatId(chatId);
 						messageToTelegram.setText("Please enter the expiration date with the following format YYYY/MM/DD HH:MM");
 						execute(messageToTelegram);
 
-					}
-					else if (awaitingPriority.getOrDefault(chatId, null) != null) {
+
+					} else if (awaitingEstimatedHours.getOrDefault(chatId, null) != null) {
+						// Clear the pending states
+						awaitingEstado.put(chatId, "");
+
+						SendMessage errorMessage = new SendMessage();
+						try {
+							int estimatedHours = Integer.parseInt(messageTextFromTelegram);
+							if (estimatedHours < 1) {
+								errorMessage.setChatId(chatId);
+								errorMessage
+										.setText("The number of estimated hourse has to be above 1. Please try again.");
+								execute(errorMessage);
+							}
+
+							awaitingEstimatedHours.put(chatId, estimatedHours);
+						} catch (NumberFormatException e) {
+							errorMessage.setChatId(chatId);
+							errorMessage.setText("Please enter a number for the estimated hours");
+							execute(errorMessage);
+						}
+
+						SendMessage messageToTelegram = new SendMessage();
+						messageToTelegram.setChatId(chatId);
+						messageToTelegram.setText("Please enter the current status for this task: \n(To Do / In Progress)");
+						execute(messageToTelegram);
+
+					} else if (awaitingPriority.getOrDefault(chatId, null) != null) {
 						// Clear the pending states
 						awaitingEstimatedHours.put(chatId, 0);
 						awaitingPriority.put(chatId, messageTextFromTelegram);
@@ -309,86 +430,90 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 						messageToTelegram.setChatId(chatId);
 						messageToTelegram.setText("Please enter the estimated hours for this task");
 						execute(messageToTelegram);
-				
+
 					}
-                    // Check if we're waiting for responsable
-                    else if (awaitingResponsable.getOrDefault(chatId, null) != null) {
-                        // Clear the pending states
+					// Check if we're waiting for responsable
+					else if (awaitingResponsable.getOrDefault(chatId, null) != null) {
+						// Clear the pending states
 						awaitingPriority.put(chatId, "");
 						awaitingResponsable.put(chatId, messageTextFromTelegram);
 
 						SendMessage messageToTelegram = new SendMessage();
 						messageToTelegram.setChatId(chatId);
-						messageToTelegram.setText("Please enter the designated priority (low,mid,high) for this task");
+						messageToTelegram
+								.setText("Please enter the designated priority (Low / Mid / High) for this task");
 						execute(messageToTelegram);
-                    }
-                    // Check if we're waiting for storypoints
-                    else if (awaitingStorypoints.getOrDefault(chatId, null) != null) {
-                        try {
-                            int storypoints = Integer.parseInt(messageTextFromTelegram);
-                            if (storypoints < 0 || storypoints > 8) {
-                                SendMessage errorMessage = new SendMessage();
-                                errorMessage.setChatId(chatId);
-                                errorMessage.setText("Please enter a valid number between 1 and 8 for story points.");
-                                execute(errorMessage);
-                                return;
-                            }
+					}
+					// Check if we're waiting for storypoints
+					else if (awaitingStorypoints.getOrDefault(chatId, null) != null) {
+						try {
+							int storypoints = Integer.parseInt(messageTextFromTelegram);
+							if (storypoints < 0 || storypoints > 8) {
+								SendMessage errorMessage = new SendMessage();
+								errorMessage.setChatId(chatId);
+								errorMessage.setText("Please enter a valid number between (1 and 8) for story points.");
+								execute(errorMessage);
+								return;
+							}
 
-                            // Store storypoints and ask for responsable
-                            awaitingStorypoints.put(chatId, storypoints);
-                            awaitingResponsable.put(chatId, "");
+							// Store storypoints and ask for responsable
+							awaitingStorypoints.put(chatId, storypoints);
+							awaitingResponsable.put(chatId, "");
 
-                            SendMessage messageToTelegram = new SendMessage();
-                            messageToTelegram.setChatId(chatId);
-                            messageToTelegram.setText("Please enter the name of the responsible developer:");
-                            execute(messageToTelegram);
+							SendMessage messageToTelegram = new SendMessage();
+							messageToTelegram.setChatId(chatId);
+							messageToTelegram.setText("Please enter the name of the responsible developer:");
+							execute(messageToTelegram);
 
-                        } catch (NumberFormatException e) {
-                            SendMessage errorMessage = new SendMessage();
-                            errorMessage.setChatId(chatId);
-                            errorMessage.setText("Please enter a valid number for story points.");
-                            execute(errorMessage);
-                        }
+						} catch (NumberFormatException e) {
+							SendMessage errorMessage = new SendMessage();
+							errorMessage.setChatId(chatId);
+							errorMessage.setText("Please enter a valid number for story points.");
+							execute(errorMessage);
+						}
 					} else {
-                        // This is the first message - save description and ask for storypoints
-                        pendingDescriptions.put(chatId, messageTextFromTelegram);
-                        awaitingStorypoints.put(chatId, 0);
+						// This is the first message - save description and ask for storypoints
+						pendingDescriptions.put(chatId, messageTextFromTelegram);
+						awaitingStorypoints.put(chatId, 0);
 
-                        SendMessage messageToTelegram = new SendMessage();
-                        messageToTelegram.setChatId(chatId);
-                        messageToTelegram.setText("Please enter story points (1-8) for this task:");
-                        execute(messageToTelegram);
-                    }
-                } catch (Exception e) {
-                    logger.error(e.getLocalizedMessage(), e);
-                    try {
-                        // Clear all pending states in case of error
-                        pendingDescriptions.remove(chatId);
-                        awaitingStorypoints.remove(chatId);
-                        awaitingResponsable.remove(chatId);
+						SendMessage messageToTelegram = new SendMessage();
+						messageToTelegram.setChatId(chatId);
+						messageToTelegram.setText("Please enter story points (1-8) for this task:");
+						execute(messageToTelegram);
+					}
+				} catch (Exception e) {
+					logger.error(e.getLocalizedMessage(), e);
+					try {
+						// Clear all pending states in case of error
+						pendingDescriptions.remove(chatId);
+						awaitingStorypoints.remove(chatId);
+						awaitingResponsable.remove(chatId);
 						awaitingPriority.remove(chatId);
 						awaitingEstimatedHours.remove(chatId);
-                        
-                        SendMessage errorMessage = new SendMessage();
-                        errorMessage.setChatId(chatId);
-                        errorMessage.setText("An error occurred. Please try again.");
-                        execute(errorMessage);
-                    } catch (TelegramApiException ex) {
-                        logger.error(ex.getLocalizedMessage(), ex);
-                    }
-                }
-            }
-			
+						awaitingEstado.remove(chatId);
+						awaitingExpirationDate.remove(chatId);
+
+						SendMessage errorMessage = new SendMessage();
+						errorMessage.setChatId(chatId);
+						errorMessage.setText("An error occurred. Please try again.");
+						execute(errorMessage);
+					} catch (TelegramApiException ex) {
+						logger.error(ex.getLocalizedMessage(), ex);
+					}
+				}
+			}
+
 		}
+
 	}
 
 	@Override
-	public String getBotUsername() {		
+	public String getBotUsername() {
 		return botName;
 	}
 
 	// GET /todolist
-	public List<ToDoItem> getAllToDoItems() { 
+	public List<ToDoItem> getAllToDoItems() {
 		return toDoItemService.findAll();
 	}
 
