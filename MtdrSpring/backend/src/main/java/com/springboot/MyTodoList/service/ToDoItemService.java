@@ -8,9 +8,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.Arrays;
-
+import java.util.stream.Collectors;
 
 @Service
 public class ToDoItemService {
@@ -25,6 +25,15 @@ public class ToDoItemService {
 
     public ResponseEntity<ToDoItem> getItemById(int id) {
         Optional<ToDoItem> todoData = toDoItemRepository.findById(id);
+        return todoData.map(toDoItem -> new ResponseEntity<>(toDoItem, HttpStatus.OK))
+                       .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
+    public ToDoItem addToDoItem(ToDoItem toDoItem) {
+        
+        ToDoItem savedItem = toDoItemRepository.save(toDoItem);
+        
+        return savedItem;
         if (todoData.isPresent()) {
             return new ResponseEntity<>(todoData.get(), HttpStatus.OK);
         } else {
@@ -40,6 +49,7 @@ public class ToDoItemService {
   
         return toDoItemRepository.save(toDoItem);
     }
+    
 
     public boolean deleteToDoItem(int id) {
         try {
@@ -49,7 +59,7 @@ public class ToDoItemService {
             return false;
         }
     }
-  
+
     public ToDoItem updateToDoItem(int id, ToDoItem td) {
         Optional<ToDoItem> toDoItemData = toDoItemRepository.findById(id);
         if (toDoItemData.isPresent()) {
@@ -58,6 +68,8 @@ public class ToDoItemService {
             toDoItem.setCreation_ts(td.getCreation_ts());
             toDoItem.setDescription(td.getDescription());
             toDoItem.setDone(td.isDone());
+            toDoItem.setStorypoints(td.getStorypoints());
+            toDoItem.setResponsable(td.getResponsable());
             toDoItem.setStoryPoints(td.getStoryPoints());
             toDoItem.setPriority(td.getPriority());
             toDoItem.setAssigned(td.getAssigned());
@@ -75,7 +87,7 @@ public class ToDoItemService {
             return null;
         }
     }
-    
+
     public ToDoItem updateToDoItemText(int id, String newText) {
         Optional<ToDoItem> toDoItemData = toDoItemRepository.findById(id);
         if (toDoItemData.isPresent()) {

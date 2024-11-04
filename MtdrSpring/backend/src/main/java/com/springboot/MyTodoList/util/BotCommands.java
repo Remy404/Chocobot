@@ -5,7 +5,7 @@ public enum BotCommands {
 	START_COMMAND("/start"), 
 	HIDE_COMMAND("/hide"), 
 	TODO_LIST("/todolist"),
-	CHOCOBOT_COMMAND("/choco"), 
+	GRAPHICS_COMMAND("/choco"), 
 	EDIT_COMMAND("/edit"), 
 	ADD_ITEM("/additem");
 

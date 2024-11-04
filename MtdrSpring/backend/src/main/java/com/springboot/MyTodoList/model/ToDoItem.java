@@ -15,6 +15,26 @@ public class ToDoItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     int ID;
+    
+    @Column(name = "DESCRIPTION")
+    String description;
+    
+    @Column(name = "CREATION_TS")
+    OffsetDateTime creation_ts;
+    
+    @Column(name = "done")
+    boolean done;
+    
+    @Column(name = "STORYPOINTS")
+    int storypoints;
+    
+    @Column(name = "RESPONSABLE")
+    String responsable;
+
+    public ToDoItem() {
+    }
+
+    public ToDoItem(int ID, String description, OffsetDateTime creation_ts, boolean done, int storypoints, String responsable) {
 
     @Column(name = "DESCRIPTION")
     String description;
@@ -48,6 +68,8 @@ public class ToDoItem {
         this.description = description;
         this.creation_ts = creation_ts;
         this.done = done;
+        this.storypoints = storypoints;
+        this.responsable = responsable;
         this.estado = estado;
         this.storyPoints = storyPoints; 
         this.priority = priority;
@@ -146,6 +168,8 @@ public class ToDoItem {
                 ", description='" + description + '\'' +
                 ", creation_ts=" + creation_ts +
                 ", done=" + done +
+                ", storypoints=" + storypoints +
+                ", responsable=" + responsable +
                 ", estado=" + estado +
                 ", storyPoints=" + storyPoints +
                 ", priority='" + priority + '\'' +

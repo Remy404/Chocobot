@@ -44,6 +44,60 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 	}
 
 	private Map<Long, String> pendingDescriptions = new HashMap<>();
+
+	private Map<Long, Integer> pendingStorypoints = new HashMap<>();
+	private Map<Long, Boolean> awaitingStorypoints = new HashMap<>();
+	private Map<Long, Boolean> awaitingResponsable = new HashMap<>();
+
+	@Override
+	public void onUpdateReceived(Update update) {
+
+		if (update.hasMessage() && update.getMessage().hasText()) {
+
+			String messageTextFromTelegram = update.getMessage().getText();
+			int messageTextFromTelegramStorypoints ;
+			
+			long chatId = update.getMessage().getChatId();
+
+			if (messageTextFromTelegram.equals(BotCommands.START_COMMAND.getCommand())
+					|| messageTextFromTelegram.equals(BotLabels.SHOW_MAIN_SCREEN.getLabel())) {
+
+				SendMessage messageToTelegram = new SendMessage();
+				messageToTelegram.setChatId(chatId);
+				messageToTelegram.setText(BotMessages.HELLO_MYTODO_BOT.getMessage());
+
+				ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+				List<KeyboardRow> keyboard = new ArrayList<>();
+
+				// first row
+				KeyboardRow row = new KeyboardRow();
+				row.add(BotLabels.LIST_ALL_ITEMS.getLabel());
+				row.add(BotLabels.ADD_NEW_ITEM.getLabel());
+				// Add the first row to the keyboard
+				keyboard.add(row);
+
+				// second row
+				row = new KeyboardRow();
+				row.add(BotLabels.SHOW_MAIN_SCREEN.getLabel());
+				row.add(BotLabels.HIDE_MAIN_SCREEN.getLabel());
+				keyboard.add(row);
+
+				row = new KeyboardRow();
+				row.add(BotLabels.GRAPHICS.getLabel());
+				keyboard.add(row);
+
+				// Set the keyboard
+				keyboardMarkup.setKeyboard(keyboard);
+
+				// Add the keyboard markup
+				messageToTelegram.setReplyMarkup(keyboardMarkup);
+
+				try {
+					execute(messageToTelegram);
+				} catch (TelegramApiException e) {
+					logger.error(e.getLocalizedMessage(), e);
+				}
+
   	private Map<Long, Boolean> awaitingStorypoints = new HashMap<>();
 	private Map<Long, Boolean> awaitingResponsable = new HashMap<>();
 
@@ -107,8 +161,25 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
                     logger.error(e.getLocalizedMessage(), e);
                 }
 
+
+			} else if (messageTextFromTelegram.indexOf(BotLabels.EDIT.getLabel()) != -1) {
+
+				String edit = messageTextFromTelegram.substring(0,
+						messageTextFromTelegram.indexOf(BotLabels.DASH.getLabel()));
+				Integer id = Integer.valueOf(edit);
+
+				try {
+
+					/* editToDoItem(id).getBody(); */
+					BotHelper.sendMessageToTelegram(chatId, BotMessages.ITEM_EDIT.getMessage(), this);
+
+				} catch (Exception e) {
+					logger.error(e.getLocalizedMessage(), e);
+				}
+
             } else if (messageTextFromTelegram.indexOf(BotLabels.UNDO.getLabel()) != -1) {
               
+
 			} else if (messageTextFromTelegram.equals(BotCommands.HIDE_COMMAND.getCommand())
 					|| messageTextFromTelegram.equals(BotLabels.HIDE_MAIN_SCREEN.getLabel())) {
 
@@ -144,7 +215,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 										 item.getStoryPoints() + BotLabels.DASH.getLabel() + 
 										 "Resp: " + item.getAssigned());
 							currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.DONE.getLabel());
-							currentRow.add(BotLabels.EDIT.getLabel());
+							currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.EDIT.getLabel());
 							keyboard.add(currentRow);
 						}
 		
@@ -200,14 +271,86 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					logger.error(e.getLocalizedMessage(), e);
 				}
 
-			} else if (messageTextFromTelegram.equals(BotCommands.CHOCOBOT_COMMAND.getCommand())
-			 || messageTextFromTelegram.equals(BotLabels.CHOCOBOT.getLabel())) {
-				// Devuelve el mensaje "chocochoco" al presionar el comando
-				BotHelper.sendMessageToTelegram(chatId, BotMessages.CHOCOBOT.getMessage(), this);
+			} else if (messageTextFromTelegram.equals(BotCommands.GRAPHICS_COMMAND.getCommand())
+			 || messageTextFromTelegram.equals(BotLabels.GRAPHICS.getLabel())) {
+				// Devuelve el mensaje "graphics" al presionar el comando
+				BotHelper.sendMessageToTelegram(chatId, BotMessages.GRAPHICS.getMessage(), this);
+				/* sendResponsableStatistics(chatId); */
 			}
 
 			else {
 				try {
+
+					// Bloque para manejar la entrada del nombre del responsable
+					if (awaitingResponsable.getOrDefault(chatId, false)) {
+						// Captura el nombre del responsable
+						String responsable = messageTextFromTelegram;
+			
+						// Crear el nuevo ToDoItem usando descripción, storypoints y responsable
+						ToDoItem newItem = new ToDoItem();
+						newItem.setDescription(pendingDescriptions.get(chatId));
+						newItem.setStorypoints(pendingStorypoints.get(chatId));
+						newItem.setResponsable(responsable);
+						newItem.setCreation_ts(OffsetDateTime.now());
+						newItem.setDone(false);
+			
+						// Guardar en la base de datos
+						addToDoItem(newItem);
+						sendConfirmationMessage(chatId, "New item added successfully!");
+			
+						// Limpiar los estados temporales después de agregar el elemento
+						pendingDescriptions.remove(chatId);
+						pendingStorypoints.remove(chatId);
+						awaitingStorypoints.remove(chatId);
+						awaitingResponsable.remove(chatId);
+			
+					// Bloque para manejar la entrada de los storypoints
+					} else if (awaitingStorypoints.getOrDefault(chatId, false)) {
+						// Intenta convertir el mensaje en un número entero para los storypoints
+						try {
+							int storypoints = Integer.parseInt(messageTextFromTelegram);
+							if (storypoints < 0 || storypoints > 13) {
+								// Envía un mensaje de error si los storypoints no están en el rango permitido
+								sendErrorMessage(chatId, "Please enter a number between 0 and 13 for story points.");
+								return;
+							}
+			
+							// Almacenar los storypoints y activar el siguiente paso para solicitar el responsable
+							pendingStorypoints.put(chatId, storypoints);
+							awaitingStorypoints.put(chatId, false);
+							awaitingResponsable.put(chatId, true);
+			
+							// Solicitar el nombre del responsable al usuario
+							SendMessage messageToTelegram = new SendMessage();
+							messageToTelegram.setChatId(chatId);
+							messageToTelegram.setText("Please enter the name of the responsible developer:");
+							execute(messageToTelegram);
+			
+						} catch (NumberFormatException e) {
+							// Enviar mensaje de error si el valor de storypoints no es un número válido
+							sendErrorMessage(chatId, "Invalid number. Please enter a valid number for story points.");
+						}
+			
+					// Bloque para manejar la primera entrada: la descripción del ToDoItem
+					} else {
+						// Captura la descripción del ToDoItem
+						pendingDescriptions.put(chatId, messageTextFromTelegram);
+						awaitingStorypoints.put(chatId, true);
+			
+						// Solicitar storypoints al usuario
+						SendMessage messageToTelegram = new SendMessage();
+						messageToTelegram.setChatId(chatId);
+						messageToTelegram.setText("Please enter story points (0-13) for this task:");
+						execute(messageToTelegram);
+					}
+			
+				} catch (Exception e) {
+					// Enviar mensaje de error genérico si ocurre una excepción inesperada
+					sendErrorMessage(chatId, "An error occurred. Please try again.");
+				}
+			}
+			
+
                     // Check if we're waiting for responsable
                     if (awaitingResponsable.getOrDefault(chatId, false)) {
                         // Create new item with description, storypoints, and responsable
@@ -289,6 +432,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
                     }
                 }
             }
+
 			
 		}
 	}
@@ -348,5 +492,28 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			return new ResponseEntity<>(flag, HttpStatus.NOT_FOUND);
 		}
 	}
+
+	private void sendErrorMessage(long chatId, String text) {
+		try {
+			SendMessage errorMessage = new SendMessage();
+			errorMessage.setChatId(chatId);
+			errorMessage.setText(text);
+			execute(errorMessage);
+		} catch (TelegramApiException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void sendConfirmationMessage(long chatId, String text) {
+		try {
+			SendMessage confirmMessage = new SendMessage();
+			confirmMessage.setChatId(chatId);
+			confirmMessage.setText(text);
+			execute(confirmMessage);
+		} catch (TelegramApiException e) {
+			e.printStackTrace();
+		}
+	}
+	
 
 }
