@@ -26,8 +26,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
@@ -66,6 +68,8 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			"A01383541@tec.mx", "Facundo",
 			"A01174206@tec.mx", "Alejandro",
 			"A00831554@tec.mx", "Saúl");
+
+	private Map<Long, String> loggedInUsers = new HashMap<>();
 
 	private OffsetDateTime parseDateString(String dateString) {
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm");
@@ -113,6 +117,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 
 				row = new KeyboardRow();
 				row.add(BotLabels.LOGIN.getLabel());
+				row.add(BotLabels.LOGOUT.getLabel());
 				keyboard.add(row);
 
 				// Set the keyboard
@@ -144,7 +149,84 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					logger.error(e.getLocalizedMessage(), e);
 				}
 
+			} else if (messageTextFromTelegram.indexOf(BotLabels.DELETE.getLabel()) != -1) {
+
+				// Extraemos el ID de la tarea que se desea eliminar
+				String delete = messageTextFromTelegram.substring(0,
+						messageTextFromTelegram.indexOf(BotLabels.DASH.getLabel()));
+				Integer id = Integer.valueOf(delete);
+
+				try {
+					// Intentamos eliminar el ítem usando el servicio
+					boolean deleted = toDoItemService.deleteToDoItem(id);
+
+					// Verificamos si la eliminación fue exitosa
+					if (deleted) {
+						BotHelper.sendMessageToTelegram(chatId, "The item has been successfully deleted.", this);
+						BotHelper.sendMessageToTelegram(chatId,
+								"Return to the complete task list with the /todolist command.", this);
+					} else {
+						BotHelper.sendMessageToTelegram(chatId, "Failed to delete the item. Please try again.", this);
+					}
+				} catch (Exception e) {
+					logger.error(e.getLocalizedMessage(), e);
+					BotHelper.sendMessageToTelegram(chatId, "An error occurred while trying to delete the item.", this);
+				}
+
 			} else if (messageTextFromTelegram.indexOf(BotLabels.UNDO.getLabel()) != -1) {
+
+				// Extraemos el ID de la tarea que se desea cambiar a "UNDONE"
+				String undo = messageTextFromTelegram.substring(0,
+				messageTextFromTelegram.indexOf(BotLabels.DASH.getLabel()));
+				Integer id = Integer.valueOf(undo);
+	
+		try {
+			// Intentamos obtener el ítem por ID
+			ToDoItem item = toDoItemService.getItemById(id).getBody();
+	
+			// Verificamos si el ítem se encontró y si está marcado como "DONE"
+			if (item != null && item.isDone()) {
+				item.setDone(false); // Cambiamos el estado a "UNDONE"
+				toDoItemService.updateToDoItem(id, item); // Actualizamos en la base de datos
+	
+				// Enviar mensaje de confirmación al usuario
+				BotHelper.sendMessageToTelegram(chatId, "The item has been marked as undone.", this);
+	
+				// Obtener todos los ítems y filtrar los activos
+				List<ToDoItem> allItems = toDoItemService.findAll(); // Obtener todos los ítems
+				List<ToDoItem> activeItems = allItems.stream()
+					.filter(activeItem -> !activeItem.isDone()) // Cambié el nombre del parámetro aquí
+					.collect(Collectors.toList());
+	
+				// Reconstruimos el teclado para mostrar los ítems activos
+				ReplyKeyboardMarkup keyboard = new ReplyKeyboardMarkup(); // Usar ReplyKeyboardMarkup de la librería de Telegram
+				keyboard.setResizeKeyboard(true); // Para ajustar el tamaño del teclado
+				keyboard.setSelective(true); // Para que el teclado se muestre solo a este chat
+	
+				List<KeyboardRow> rows = new ArrayList<>(); // Lista para las filas del teclado
+	
+				for (ToDoItem activeItem : activeItems) {
+					KeyboardRow currentRow = new KeyboardRow(); // Crear una nueva fila
+					currentRow.add(activeItem.getDescription() + " " + BotLabels.DASH.getLabel() + " " + activeItem.getAssigned());
+					currentRow.add(activeItem.getID() + BotLabels.DASH.getLabel() + BotLabels.DONE.getLabel());
+					currentRow.add(BotLabels.EDIT.getLabel());
+					rows.add(currentRow); // Agregar la fila a la lista de filas
+				}
+	
+				keyboard.setKeyboard(rows); // Asignar las filas al teclado
+	
+				// Enviar el nuevo teclado al usuario
+				BotHelper.sendKeyboardToTelegram(chatId, keyboard, this);
+			} else {
+				// Si el ítem no se encontró o no estaba hecho
+				BotHelper.sendMessageToTelegram(chatId, "The item is either not found or is not done.", this);
+			}
+	
+		} catch (Exception e) {
+			logger.error(e.getLocalizedMessage(), e);
+			BotHelper.sendMessageToTelegram(chatId,
+					"An error occurred while trying to mark the item as undone.", this);
+		}
 
 			} else if (messageTextFromTelegram.equals(BotCommands.HIDE_COMMAND.getCommand())
 					|| messageTextFromTelegram.equals(BotLabels.HIDE_MAIN_SCREEN.getLabel())) {
@@ -252,36 +334,36 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				} catch (TelegramApiException e) {
 					logger.error(e.getLocalizedMessage(), e);
 				}
+
 			} else if (messageTextFromTelegram.contains("-")) {
 				String[] parts = messageTextFromTelegram.split(" - ");
 				if (parts.length == 2) {
 					String email = parts[0].trim();
 					String name = parts[1].trim();
 
-					// Verificar si el correo está en la lista de usuarios permitidos
 					if (allowedUsers.containsKey(email)) {
 						String registeredName = allowedUsers.get(email);
 
-						// Comparar el nombre ingresado con el nombre registrado
 						if (registeredName.equals(name)) {
+							// Almacenar el nombre del usuario después del login exitoso
+							loggedInUsers.put(chatId, name);
+
 							SendMessage messageToTelegram = new SendMessage();
 							messageToTelegram.setChatId(chatId);
 
-							// Consultar tareas asignadas al usuario utilizando el servicio
 							List<ToDoItem> userTasks = toDoItemService.findByAssignedName(name);
 
-							// Crear el mensaje con las tareas
 							if (userTasks.isEmpty()) {
 								messageToTelegram.setText("You have no tasks assigned.");
 							} else {
 								StringBuilder tasksMessage = new StringBuilder("Welcome " + name + "!"
-										+ " You have successfully logged in." + "\n\nHere are your current task:\n\n");
+										+ " You have successfully logged in." + "\n\nHere are your current tasks:\n\n");
 								for (ToDoItem item : userTasks) {
 									tasksMessage.append("- ")
 											.append(item.getDescription())
-											.append(" (Priority: ").append(item.getPriority()).append("  - ")
-											.append("  StoryPoints: ").append(item.getStoryPoints()).append("  - ")
-											.append("  Status: ").append(item.getEstado())
+											.append(" (Priority: ").append(item.getPriority()).append(" - ")
+											.append(" StoryPoints: ").append(item.getStoryPoints()).append(" - ")
+											.append(" Status: ").append(item.getEstado())
 											.append(")\n");
 								}
 								messageToTelegram.setText(tasksMessage.toString());
@@ -293,7 +375,6 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 								logger.error(e.getLocalizedMessage(), e);
 							}
 						} else {
-							// El nombre ingresado no coincide con el nombre registrado
 							SendMessage messageToTelegram = new SendMessage();
 							messageToTelegram.setChatId(chatId);
 							messageToTelegram.setText("Invalid credentials. Please enter a valid email and name.");
@@ -305,7 +386,6 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 							}
 						}
 					} else {
-						// El correo no está en la lista de usuarios permitidos
 						SendMessage messageToTelegram = new SendMessage();
 						messageToTelegram.setChatId(chatId);
 						messageToTelegram.setText("Unauthorized user. Please use a registered email address.");
@@ -317,7 +397,6 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 						}
 					}
 				} else {
-					// Mensaje de error si el formato es incorrecto
 					SendMessage messageToTelegram = new SendMessage();
 					messageToTelegram.setChatId(chatId);
 					messageToTelegram.setText(
@@ -330,6 +409,32 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					}
 				}
 
+				// Nueva condición para el botón y comando /logout
+			} else if (messageTextFromTelegram.equals(BotCommands.LOGOUT_COMMAND.getCommand())
+					|| messageTextFromTelegram.equals(BotLabels.LOGOUT.getLabel())) {
+				// Obtener el nombre del usuario para el mensaje de despedida
+				String name = loggedInUsers.get(chatId);
+
+				SendMessage logoutMessage = new SendMessage();
+				logoutMessage.setChatId(chatId);
+				logoutMessage.setText("Your session has ended successfully " + name + ".");
+
+				// Limpiar la información de sesión
+				loggedInUsers.remove(chatId);
+				pendingDescriptions.remove(chatId);
+				awaitingStorypoints.remove(chatId);
+				awaitingResponsable.remove(chatId);
+				awaitingPriority.remove(chatId);
+				awaitingEstimatedHours.remove(chatId);
+				awaitingEstado.remove(chatId);
+				awaitingExpirationDate.remove(chatId);
+
+				try {
+					execute(logoutMessage);
+				} catch (TelegramApiException e) {
+					logger.error(e.getLocalizedMessage(), e);
+				}
+
 			} else {
 				try {
 					if (awaitingExpirationDate.getOrDefault(chatId, null) != null) {
@@ -337,7 +442,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 						try {
 							OffsetDateTime offsetDate = parseDateString(messageTextFromTelegram);
 							awaitingExpirationDate.put(chatId, offsetDate.toString());
-					
+
 							// Create new item with all fields collected
 							ToDoItem newItem = new ToDoItem();
 							newItem.setDescription(pendingDescriptions.get(chatId));
@@ -349,10 +454,10 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 							newItem.setExpiration_TS(offsetDate);
 							newItem.setCreation_ts(OffsetDateTime.now());
 							newItem.setDone(false);
-					
+
 							// Save the item
 							ResponseEntity entity = addToDoItem(newItem);
-					
+
 							// Send confirmation message
 							SendMessage messageToTelegram = new SendMessage();
 							messageToTelegram.setChatId(chatId);
@@ -365,7 +470,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 									+ "\nExpiration Date: " + newItem.getExpiration_TS()
 									+ "\nCheck your pending tasks /todolist");
 							execute(messageToTelegram);
-					
+
 							// Clear all pending states
 							pendingDescriptions.remove(chatId);
 							awaitingStorypoints.remove(chatId);
@@ -374,12 +479,13 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 							awaitingEstimatedHours.remove(chatId);
 							awaitingEstado.remove(chatId);
 							awaitingExpirationDate.remove(chatId);
-					
+
 						} catch (DateTimeParseException e) {
 							// If expiration date format is invalid
 							SendMessage errorMessage = new SendMessage();
 							errorMessage.setChatId(chatId);
-							errorMessage.setText("Please enter a valid expiration date with the following format YYYY/MM/DD HH:MM");
+							errorMessage.setText(
+									"Please enter a valid expiration date with the following format YYYY/MM/DD HH:MM");
 							execute(errorMessage);
 							return;
 						}
@@ -391,9 +497,9 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 
 						SendMessage messageToTelegram = new SendMessage();
 						messageToTelegram.setChatId(chatId);
-						messageToTelegram.setText("Please enter the expiration date with the following format YYYY/MM/DD HH:MM");
+						messageToTelegram
+								.setText("Please enter the expiration date with the following format YYYY/MM/DD HH:MM");
 						execute(messageToTelegram);
-
 
 					} else if (awaitingEstimatedHours.getOrDefault(chatId, null) != null) {
 						// Clear the pending states
@@ -418,7 +524,9 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 
 						SendMessage messageToTelegram = new SendMessage();
 						messageToTelegram.setChatId(chatId);
-						messageToTelegram.setText("Please enter the current status for this task: \n(To Do / In Progress)");
+						messageToTelegram
+								.setText(
+										"Please enter the current status for this task: \n(To Do / In Progress / Completed)");
 						execute(messageToTelegram);
 
 					} else if (awaitingPriority.getOrDefault(chatId, null) != null) {

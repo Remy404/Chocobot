@@ -57,6 +57,8 @@ public class ToDoItemService {
             toDoItem.setPriority(td.getPriority());
             toDoItem.setAssigned(td.getAssigned());
             toDoItem.setEstimated_Hours(td.getEstimated_Hours());
+            toDoItem.setEstado(td.getEstado());
+            toDoItem.setExpiration_TS(td.getExpiration_TS());
 
             if (td.getEstado() == null || td.getEstado().isEmpty()) {
                 toDoItem.setEstado("To Do");  // Valor por defecto si no se establece un estado
