@@ -1,6 +1,8 @@
 package com.springboot.MyTodoList.model;
 
 import javax.persistence.*;
+import javax.persistence.criteria.CriteriaBuilder.In;
+
 import java.time.OffsetDateTime;
 
 /*
@@ -33,12 +35,50 @@ public class ToDoItem {
     }
 
     public ToDoItem(int ID, String description, OffsetDateTime creation_ts, boolean done, int storypoints, String responsable) {
+
+    @Column(name = "DESCRIPTION")
+    String description;
+
+    @Column(name = "CREATION_TS")
+    OffsetDateTime creation_ts;
+  
+    @Column(name = "ESTADO")
+    String estado;
+  
+    @Column(name = "DONE")
+    Boolean done;
+
+    @Column(name = "STORYPOINTS") 
+    Integer storyPoints;
+
+    @Column(name = "PRIORITY")
+    String priority;
+
+    @Column(name = "ASSIGNED")
+    String assigned;
+    
+    @Column(name = "ESTIMATED_HOURS")
+    Integer estimated_hours;
+
+    @Column(name = "EXPIRATION_TS")
+    OffsetDateTime expiration_ts;
+
+    public ToDoItem(int ID, String description, OffsetDateTime creation_ts, Boolean done, Integer storyPoints, String priority, String assigned, Integer estimated_hours, OffsetDateTime expiration_ts, String estado) {
         this.ID = ID;
         this.description = description;
         this.creation_ts = creation_ts;
         this.done = done;
         this.storypoints = storypoints;
         this.responsable = responsable;
+        this.estado = estado;
+        this.storyPoints = storyPoints; 
+        this.priority = priority;
+        this.assigned = assigned;
+        this.estimated_hours = estimated_hours;
+        this.expiration_ts = expiration_ts;
+    }
+
+    public ToDoItem() {
     }
 
     public int getID() {
@@ -65,28 +105,60 @@ public class ToDoItem {
         this.creation_ts = creation_ts;
     }
 
-    public boolean isDone() {
+    public Boolean isDone() {
         return done;
     }
 
-    public void setDone(boolean done) {
+    public void setDone(Boolean done) {
         this.done = done;
     }
 
-    public int getStorypoints() {
-        return storypoints;
+    public String getEstado() {
+        return estado;
     }
 
-    public void setStorypoints(int storypoints) {
-        this.storypoints = storypoints;
+    public void setEstado(String estado) {
+        this.estado = estado;
     }
 
-    public String getResponsable() {
-        return responsable;
+    public Integer getStoryPoints() {
+        return storyPoints;
     }
 
-    public void setResponsable(String responsable) {
-        this.responsable = responsable;
+    public void setStoryPoints(Integer storyPoints) {
+        this.storyPoints = storyPoints;
+    }
+
+    public String getPriority() {
+        return priority;
+    }
+
+    public void setPriority(String priority) {
+        this.priority = priority;
+    }
+
+    public String getAssigned() {
+        return assigned;
+    }
+
+    public void setAssigned(String assigned) {
+        this.assigned = assigned;
+    }
+
+    public Integer getEstimated_Hours() {
+        return estimated_hours;
+    }
+
+    public void setEstimated_Hours(Integer estimated_hours) {
+        this.estimated_hours = estimated_hours;
+    }
+
+    public OffsetDateTime getExpiration_TS() {
+        return expiration_ts;
+    }
+
+    public void setExpiration_TS(OffsetDateTime expiration_ts) {
+        this.expiration_ts = expiration_ts;
     }
 
     @Override
@@ -98,6 +170,12 @@ public class ToDoItem {
                 ", done=" + done +
                 ", storypoints=" + storypoints +
                 ", responsable=" + responsable +
+                ", estado=" + estado +
+                ", storyPoints=" + storyPoints +
+                ", priority='" + priority + '\'' +
+                ", assigned='" + assigned + '\'' + 
+                ", estimated_hours='" + estimated_hours +
+                ", expiration_ts='" + expiration_ts +
                 '}';
     }
 }

@@ -19,7 +19,8 @@ public class ToDoItemService {
     private ToDoItemRepository toDoItemRepository;
 
     public List<ToDoItem> findAll() {
-        return toDoItemRepository.findAll();
+        List<ToDoItem> todoItems = toDoItemRepository.findAll();
+        return todoItems;
     }
 
     public ResponseEntity<ToDoItem> getItemById(int id) {
@@ -33,6 +34,20 @@ public class ToDoItemService {
         ToDoItem savedItem = toDoItemRepository.save(toDoItem);
         
         return savedItem;
+        if (todoData.isPresent()) {
+            return new ResponseEntity<>(todoData.get(), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+  
+    public ToDoItem addToDoItem(ToDoItem toDoItem){
+        if (toDoItem.getEstado() == null || toDoItem.getEstado().isEmpty()) {
+            toDoItem.setEstado("To Do");  // Valor por defecto si no se establece un estado
+        }
+        validateEstado(toDoItem.getEstado());
+  
+        return toDoItemRepository.save(toDoItem);
     }
     
 
@@ -55,6 +70,18 @@ public class ToDoItemService {
             toDoItem.setDone(td.isDone());
             toDoItem.setStorypoints(td.getStorypoints());
             toDoItem.setResponsable(td.getResponsable());
+            toDoItem.setStoryPoints(td.getStoryPoints());
+            toDoItem.setPriority(td.getPriority());
+            toDoItem.setAssigned(td.getAssigned());
+            toDoItem.setEstimated_Hours(td.getEstimated_Hours());
+ 
+            if (td.getEstado() == null || td.getEstado().isEmpty()) {
+                toDoItem.setEstado("To Do");  // Valor por defecto si no se establece un estado
+            } else {
+                validateEstado(td.getEstado());
+                toDoItem.setEstado(td.getEstado());  // Actualiza el campo estado
+            }
+
             return toDoItemRepository.save(toDoItem);
         } else {
             return null;
@@ -69,6 +96,13 @@ public class ToDoItemService {
             return toDoItemRepository.save(toDoItem); // Guarda los cambios
         } else {
             return null; // Si no se encuentra el item, regresa null
+        }
+    }
+
+    private void validateEstado(String estado) {
+        List<String> validEstados = Arrays.asList("To Do", "In Progress", "Completed");
+        if (!validEstados.contains(estado)) {
+            throw new IllegalArgumentException("Estado inválido: " + estado);
         }
     }
 }
