@@ -57,9 +57,9 @@ function App() {
       );
     }
 
-    function toggleDone(event, id, description, done) {
+    function toggleDone(event, id, description, done, responsable) {
       event.preventDefault();
-      modifyItem(id, description, done).then(
+      modifyItem(id, description, done, responsable).then(
         () => { reloadOneItem(id); },
         (error) => { setError(error); }
       );
@@ -80,7 +80,8 @@ function App() {
               x => (x.id === id ? {
                 ...x,
                 'description': result.description,
-                'done': result.done
+                'done': result.done,
+                'responsable': result.responsable
               } : x));
             setItems(items2);
           },
@@ -89,8 +90,8 @@ function App() {
           });
     }
 
-    function modifyItem(id, description, done) {
-      var data = { "description": description, "done": done };
+    function modifyItem(id, description, done, responsable) {
+      var data = { "description": description, "done": done, "responsable": responsable };
       return fetch(API_LIST + "/" + id, {
         method: 'PUT',
         headers: {
@@ -168,7 +169,7 @@ function App() {
         responsable: newItem.responsable
       };
     
-      fetch(API_LIST, {
+      fetch(API_LIST + "/add", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
