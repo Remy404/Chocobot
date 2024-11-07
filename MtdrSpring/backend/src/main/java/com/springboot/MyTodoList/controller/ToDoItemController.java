@@ -6,13 +6,20 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.springboot.MyTodoList.repository.ToDoItemRepository;
 
 import java.net.URI;
 import java.util.List;
 
 @RestController
 public class ToDoItemController {
+
+    private static final Logger logger = LoggerFactory.getLogger(ToDoItemBotController.class);
+
+    private ToDoItemRepository toDoItemRepository;
+    
     @Autowired
     private ToDoItemService toDoItemService;
     //@CrossOrigin
@@ -31,12 +38,19 @@ public class ToDoItemController {
         }
     }
     //@CrossOrigin
-    @PostMapping(value = "/todolist")
+    @PostMapping(value = "/todolist/add")
     public ResponseEntity addToDoItem(@RequestBody ToDoItem todoItem) throws Exception{
+        logger.info("addToDoItem ");
         try {
             ToDoItem td = toDoItemService.addToDoItem(todoItem);
+            logger.info("addToDoItem 1");
+
             HttpHeaders responseHeaders = new HttpHeaders();
+            logger.info("addToDoItem 2");
+
             responseHeaders.set("location", "" + td.getID());
+            logger.info("addToDoItem 3");
+
             responseHeaders.set("Access-Control-Expose-Headers", "location");
 
             return ResponseEntity.ok()
@@ -76,7 +90,7 @@ public class ToDoItemController {
     }
     
     @PatchMapping(value = "/todolist/{id}/description")
-public ResponseEntity updateToDoItemDescription(@PathVariable int id, @RequestBody String newDescription) {
+    public ResponseEntity updateToDoItemDescription(@PathVariable int id, @RequestBody String newDescription) {
     try {
         ToDoItem updatedItem = toDoItemService.updateToDoItemText(id, newDescription); // Aquí llamas al servicio
         if (updatedItem != null) {
@@ -86,8 +100,19 @@ public ResponseEntity updateToDoItemDescription(@PathVariable int id, @RequestBo
         }
     } catch (Exception e) {
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
-}
+
+    @GetMapping(value = "/todolist/responsable/{responsable}")
+    public ResponseEntity<List<ToDoItem>> getItemsByResponsable(@PathVariable String responsable) {
+    List<ToDoItem> items = toDoItemRepository.findByResponsable(responsable);
+        if (items.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(items, HttpStatus.OK);
+    }
+
+
 
 
 
