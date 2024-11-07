@@ -33,7 +33,6 @@ public class MyTodoListApplication implements CommandLineRunner {
 		SpringApplication.run(MyTodoListApplication.class, args);
 	}
 
-	
 	@Override
 	public void run(String... args) throws Exception {
 		try {

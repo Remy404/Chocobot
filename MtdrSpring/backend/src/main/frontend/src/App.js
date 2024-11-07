@@ -35,6 +35,11 @@ function App() {
     const [editItemId, setEditItemId] = useState(null);
     const [editItemText, setEditItemText] = useState('');
 
+    const [selectedDeveloper, setSelectedDeveloper] = useState(''); // Estado para almacenar el desarrollador seleccionado
+
+    // Extraer todos los responsables únicos de la lista de items
+    const uniqueDevelopers = [...new Set(items.map(item => item.responsable))];
+
     function deleteItem(deleteId) {
       fetch(API_LIST + "/" + deleteId, {
         method: 'DELETE',
@@ -57,9 +62,9 @@ function App() {
       );
     }
 
-    function toggleDone(event, id, description, done) {
+    function toggleDone(event, id, description, done, responsable) {
       event.preventDefault();
-      modifyItem(id, description, done).then(
+      modifyItem(id, description, done, responsable).then(
         () => { reloadOneItem(id); },
         (error) => { setError(error); }
       );
@@ -80,7 +85,8 @@ function App() {
               x => (x.id === id ? {
                 ...x,
                 'description': result.description,
-                'done': result.done
+                'done': result.done,
+                'responsable': result.responsable
               } : x));
             setItems(items2);
           },
@@ -89,8 +95,8 @@ function App() {
           });
     }
 
-    function modifyItem(id, description, done) {
-      var data = { "description": description, "done": done };
+    function modifyItem(id, description, done, responsable) {
+      var data = { "description": description, "done": done, "responsable": responsable };
       return fetch(API_LIST + "/" + id, {
         method: 'PUT',
         headers: {
@@ -168,7 +174,7 @@ function App() {
         responsable: newItem.responsable
       };
     
-      fetch(API_LIST, {
+      fetch(API_LIST + "/add", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -213,10 +219,28 @@ function App() {
 
         { !isLoading &&
           <div id="maincontent">
+            {/* Selector para filtrar tareas por desarrollador */}
+            <div>
+              <label htmlFor="developer-select">Filtrar por desarrollador:</label>
+              <select
+                id="developer-select"
+                value={selectedDeveloper}
+                onChange={(e) => setSelectedDeveloper(e.target.value)}
+              >
+                <option value="">Todos</option>
+                {uniqueDevelopers.map((developer, index) => (
+                  <option key={index} value={developer}>
+                    {developer}
+                  </option>
+                ))}
+              </select>
+            </div>
             
             {/* Sección de Tareas pendientes */}
             <h2>Tareas pendientes</h2>
-            {items.filter(item => !item.done).map(item => (
+            {items
+            .filter(item => !item.done && (selectedDeveloper === "" || item.responsable === selectedDeveloper))
+            .map(item => (
               <Accordion key={item.id}>
                 <AccordionSummary
                   expandIcon={<ExpandMoreIcon />}

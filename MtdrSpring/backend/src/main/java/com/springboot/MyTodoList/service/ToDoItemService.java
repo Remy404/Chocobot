@@ -8,8 +8,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 @Service
 public class ToDoItemService {
@@ -53,6 +55,8 @@ public class ToDoItemService {
             toDoItem.setCreation_ts(td.getCreation_ts());
             toDoItem.setDescription(td.getDescription());
             toDoItem.setDone(td.isDone());
+            toDoItem.setStorypoints(td.getStorypoints());
+            toDoItem.setResponsable(td.getResponsable());
             toDoItem.setStoryPoints(td.getStoryPoints());
             toDoItem.setPriority(td.getPriority());
             toDoItem.setAssigned(td.getAssigned());

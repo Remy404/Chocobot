@@ -25,3 +25,5 @@ replay_pid*
 
 # Oracle wallet
 MtdrSpring/backend/Wallet_reacttodo10lise
+MtdrSpring/wallet
+MtdrSpring/state

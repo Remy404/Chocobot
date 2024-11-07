@@ -186,7 +186,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				SendMessage messageToTelegram = new SendMessage();
 				messageToTelegram.setChatId(chatId);
 				messageToTelegram.setText("Please enter new story points (1-8) for this task:");
-
+ 
 				try {
 					execute(messageToTelegram); // Intentar enviar el mensaje
 				} catch (TelegramApiException e) {
@@ -224,7 +224,6 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				SendMessage messageToTelegram = new SendMessage();
 				messageToTelegram.setChatId(chatId);
 				messageToTelegram.setText("Please enter the name of the responsible developer:");
-
 				try {
 					execute(messageToTelegram); // Intentar enviar el mensaje
 				} catch (TelegramApiException e) {
@@ -428,6 +427,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.DELETE.getLabel());
 					keyboard.add(currentRow);
 				}
+
 				// command back to main screen
 				KeyboardRow mainScreenRowBottom = new KeyboardRow();
 				mainScreenRowBottom.add(BotLabels.LOGIN.getLabel());
@@ -718,7 +718,6 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 							// Store storypoints and ask for responsable
 							awaitingStorypoints.put(chatId, storypoints);
 							awaitingResponsable.put(chatId, "");
-
 							SendMessage messageToTelegram = new SendMessage();
 							messageToTelegram.setChatId(chatId);
 							messageToTelegram.setText("Please enter the name of the responsible developer:");
@@ -761,7 +760,6 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					}
 				}
 			}
-
 		}
 
 	}
@@ -821,5 +819,28 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			return new ResponseEntity<>(flag, HttpStatus.NOT_FOUND);
 		}
 	}
+
+	private void sendErrorMessage(long chatId, String text) {
+		try {
+			SendMessage errorMessage = new SendMessage();
+			errorMessage.setChatId(chatId);
+			errorMessage.setText(text);
+			execute(errorMessage);
+		} catch (TelegramApiException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void sendConfirmationMessage(long chatId, String text) {
+		try {
+			SendMessage confirmMessage = new SendMessage();
+			confirmMessage.setChatId(chatId);
+			confirmMessage.setText(text);
+			execute(confirmMessage);
+		} catch (TelegramApiException e) {
+			e.printStackTrace();
+		}
+	}
+	
 
 }
