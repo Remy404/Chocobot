@@ -12,11 +12,5 @@ import java.util.List;
 @Repository
 @Transactional
 public interface ToDoItemRepository extends JpaRepository<ToDoItem, Integer> {
-    
     List<ToDoItem> findByAssigned(String assignedName);
-=======
-@EnableTransactionManagement
-public interface ToDoItemRepository extends JpaRepository<ToDoItem,Integer> {
-
-    List<ToDoItem> findByResponsable(String responsable);
 }

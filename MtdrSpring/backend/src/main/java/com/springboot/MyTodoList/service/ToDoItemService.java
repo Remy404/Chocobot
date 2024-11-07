@@ -55,8 +55,6 @@ public class ToDoItemService {
             toDoItem.setCreation_ts(td.getCreation_ts());
             toDoItem.setDescription(td.getDescription());
             toDoItem.setDone(td.isDone());
-            toDoItem.setStorypoints(td.getStorypoints());
-            toDoItem.setResponsable(td.getResponsable());
             toDoItem.setStoryPoints(td.getStoryPoints());
             toDoItem.setPriority(td.getPriority());
             toDoItem.setAssigned(td.getAssigned());
