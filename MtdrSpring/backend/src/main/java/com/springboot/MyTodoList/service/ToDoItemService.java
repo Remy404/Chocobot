@@ -49,7 +49,6 @@ public class ToDoItemService {
   
         return toDoItemRepository.save(toDoItem);
     }
-    
 
     public boolean deleteToDoItem(int id) {
         try {

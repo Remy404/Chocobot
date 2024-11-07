@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.springboot.MyTodoList.repository.ToDoItemRepository;
 
 import java.net.URI;
 import java.util.List;
@@ -17,6 +18,8 @@ public class ToDoItemController {
 
     private static final Logger logger = LoggerFactory.getLogger(ToDoItemBotController.class);
 
+    private ToDoItemRepository toDoItemRepository;
+    
     @Autowired
     private ToDoItemService toDoItemService;
     //@CrossOrigin
@@ -87,7 +90,7 @@ public class ToDoItemController {
     }
     
     @PatchMapping(value = "/todolist/{id}/description")
-public ResponseEntity updateToDoItemDescription(@PathVariable int id, @RequestBody String newDescription) {
+    public ResponseEntity updateToDoItemDescription(@PathVariable int id, @RequestBody String newDescription) {
     try {
         ToDoItem updatedItem = toDoItemService.updateToDoItemText(id, newDescription); // Aquí llamas al servicio
         if (updatedItem != null) {
@@ -97,8 +100,19 @@ public ResponseEntity updateToDoItemDescription(@PathVariable int id, @RequestBo
         }
     } catch (Exception e) {
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
-}
+
+    @GetMapping(value = "/todolist/responsable/{responsable}")
+    public ResponseEntity<List<ToDoItem>> getItemsByResponsable(@PathVariable String responsable) {
+    List<ToDoItem> items = toDoItemRepository.findByResponsable(responsable);
+        if (items.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(items, HttpStatus.OK);
+    }
+
+
 
 
 

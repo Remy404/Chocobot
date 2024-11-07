@@ -1,4 +1,6 @@
 package com.springboot.MyTodoList.repository;
+import java.util.List;
+
 
 
 import com.springboot.MyTodoList.model.ToDoItem;
@@ -12,6 +14,8 @@ import javax.transaction.Transactional;
 @Transactional
 @EnableTransactionManagement
 public interface ToDoItemRepository extends JpaRepository<ToDoItem,Integer> {
+
+    List<ToDoItem> findByResponsable(String responsable);
 
 
 }
