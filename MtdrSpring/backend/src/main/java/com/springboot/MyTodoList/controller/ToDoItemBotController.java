@@ -160,9 +160,6 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				try {
 					// Obtener la tarea por su ID
 					ToDoItem item = getToDoItemById(id).getBody();
-
-					// Comenzar a solicitar los campos para editar
-					// Mostrar la descripción actual y preguntar qué desea editar
 					SendMessage messageToTelegram = new SendMessage();
 					messageToTelegram.setChatId(chatId);
 					messageToTelegram.setText("Editing item:\nDescription: " + item.getDescription() +
