@@ -16,7 +16,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http
+/*         http
             .authorizeRequests()
                 .anyRequest().authenticated()   // Cualquier solicitud debe estar autenticada
                 .and()
@@ -26,7 +26,8 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .permitAll()
                 .and()
             .logout()
-                .permitAll();
+                .permitAll(); */
+                http.cors().and().csrf().disable();
     }
 
     @Bean
