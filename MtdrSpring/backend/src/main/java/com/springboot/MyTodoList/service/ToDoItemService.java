@@ -34,7 +34,6 @@ public class ToDoItemService {
         
         return savedItem;
     }
-    
 
     public boolean deleteToDoItem(int id) {
         try {
