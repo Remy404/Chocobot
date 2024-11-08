@@ -14,8 +14,5 @@ import javax.transaction.Transactional;
 @Transactional
 @EnableTransactionManagement
 public interface ToDoItemRepository extends JpaRepository<ToDoItem,Integer> {
-
     List<ToDoItem> findByResponsable(String responsable);
-
-
 }

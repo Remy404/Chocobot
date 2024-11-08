@@ -111,10 +111,4 @@ public class ToDoItemController {
         }
         return new ResponseEntity<>(items, HttpStatus.OK);
     }
-
-
-
-
-
-
 }
