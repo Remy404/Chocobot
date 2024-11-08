@@ -102,4 +102,13 @@ public class ToDoItemController {
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @GetMapping(value = "/todolist/assigned/{assigned}")
+    public ResponseEntity<List<ToDoItem>> getItemsByAssigned(@PathVariable String assigned) {
+    List<ToDoItem> items = toDoItemRepository.findByAssigned(assigned);
+        if (items.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(items, HttpStatus.OK);
+    }
 }

@@ -841,6 +841,4 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			e.printStackTrace();
 		}
 	}
-	
-
 }
