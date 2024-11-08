@@ -15,10 +15,9 @@ import React, { useState, useEffect } from 'react';
 import NewItem from './NewItem';
 import API_LIST from './API';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Button, TableBody, CircularProgress, Accordion, AccordionSummary, AccordionDetails, Typography } from '@mui/material';
+import { Button, CircularProgress, Accordion, AccordionSummary, AccordionDetails, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Moment from 'react-moment';
-import Estadisticas from './components/Estadisticas'
 
 /* In this application we're using Function Components with the State Hooks
  * to manage the states. See the doc: https://reactjs.org/docs/hooks-state.html
@@ -38,7 +37,7 @@ function App() {
     const [selectedDeveloper, setSelectedDeveloper] = useState(''); // Estado para almacenar el desarrollador seleccionado
 
     // Extraer todos los responsables únicos de la lista de items
-    const uniqueDevelopers = [...new Set(items.map(item => item.responsable))];
+    const uniqueDevelopers = [...new Set(items.map(item => item.assigned))];
 
     function deleteItem(deleteId) {
       fetch(API_LIST + "/" + deleteId, {
@@ -62,9 +61,9 @@ function App() {
       );
     }
 
-    function toggleDone(event, id, description, done, responsable) {
+    function toggleDone(event, id, description, done, assigned) {
       event.preventDefault();
-      modifyItem(id, description, done, responsable).then(
+      modifyItem(id, description, done, assigned).then(
         () => { reloadOneItem(id); },
         (error) => { setError(error); }
       );
@@ -86,7 +85,7 @@ function App() {
                 ...x,
                 'description': result.description,
                 'done': result.done,
-                'responsable': result.responsable
+                'assigned': result.assigned
               } : x));
             setItems(items2);
           },
@@ -95,8 +94,8 @@ function App() {
           });
     }
 
-    function modifyItem(id, description, done, responsable) {
-      var data = { "description": description, "done": done, "responsable": responsable };
+    function modifyItem(id, description, done, assigned) {
+      var data = { "description": description, "done": done, "assigned": assigned };
       return fetch(API_LIST + "/" + id, {
         method: 'PUT',
         headers: {
@@ -170,8 +169,12 @@ function App() {
       // Estructura de datos con la descripción y los storypoints
       var data = { 
         description: newItem.item,      // Descripción del ítem
-        storypoints: newItem.storypoints,  // Puntos de historia
-        responsable: newItem.responsable
+        storyPoints: newItem.storypoints,  // Puntos de historia
+        assigned: newItem.responsable,
+        priority: newItem.priority,
+        estimated_hours: newItem.estimatedHours,
+        expiration_ts: new Date(newItem.expirationDate),
+        done: false,
       };
     
       fetch(API_LIST + "/add", {
@@ -184,31 +187,29 @@ function App() {
       .then((response) => {
         if (response.ok) {
           return response;
-        } else {
-          throw new Error('Something went wrong ... addItem');
         }
       })
       .then(
         (result) => {
           var id = result.headers.get('location');
-          // Incluir 'storypoints' en el nuevo ítem
           var newItemWithId = { 
             "id": id, 
             "description": newItem.item,  // Descripción
-            "storypoints": newItem.storypoints,  // Puntos de historia
-            "responsable": newItem.responsable
+            "storyPoints": newItem.storypoints,  // Puntos de historia
+            "assigned": newItem.responsable,
+            "priority": newItem.priority,
+            "creation_ts": new Date(newItem.expirationDate),
+            "estimate_Hours": newItem.estimatedHours
           };
           setItems([newItemWithId, ...items]);
-          setInserting(false);
-        },
-        (error) => {
-          setInserting(false);
-          setError(error);
         }
-      );
+      ).catch((e) => {
+        console.error(e);
+      }).finally(() => {
+        setInserting(false);
+      });
     }
     
-
     return (
       <div className="App">
         <h1>ChocoBot</h1>
@@ -221,13 +222,13 @@ function App() {
           <div id="maincontent">
             {/* Selector para filtrar tareas por desarrollador */}
             <div>
-              <label htmlFor="developer-select">Filtrar por desarrollador:</label>
+              <label htmlFor="developer-select">Filter by developer </label>
               <select
                 id="developer-select"
                 value={selectedDeveloper}
                 onChange={(e) => setSelectedDeveloper(e.target.value)}
               >
-                <option value="">Todos</option>
+                <option value="">All</option>
                 {uniqueDevelopers.map((developer, index) => (
                   <option key={index} value={developer}>
                     {developer}
@@ -237,9 +238,9 @@ function App() {
             </div>
             
             {/* Sección de Tareas pendientes */}
-            <h2>Tareas pendientes</h2>
+            <h2>Pending Tasks</h2>
             {items
-            .filter(item => !item.done && (selectedDeveloper === "" || item.responsable === selectedDeveloper))
+            .filter(item => !item.done && (selectedDeveloper === "" || item.assigned === selectedDeveloper))
             .map(item => (
               <Accordion key={item.id}>
                 <AccordionSummary
@@ -260,13 +261,16 @@ function App() {
                 </AccordionSummary>
                 <AccordionDetails>
                   <Typography>
-                    Storypoints: {item.storypoints} {/* Mostrar los Storypoints */}
+                    Storypoints: {item.storyPoints} {/* Mostrar los Storypoints */}
                   </Typography>
                   <Typography>
-                    Responsable: {item.responsable}  {/* Mostrar el responsable */}
+                    Assigned to: {item.assigned}  {/* Mostrar el responsable */}
                   </Typography>
                   <Typography>
-                    Creado el: <Moment format="MMM Do hh:mm:ss">{item.createdAt}</Moment>
+                    Priority: {item.priority}
+                  </Typography>
+                  <Typography>
+                    Estimated Hours: {item.estimated_Hours}
                   </Typography>
                   <Button variant="contained" onClick={() => enableEdit(item)} size="small">
                     Edit
@@ -279,7 +283,7 @@ function App() {
             ))}
 
             {/* Sección de Tareas completadas */}
-            <h2>Tareas completadas</h2>
+            <h2>Completed Tasks</h2>
             {items.filter(item => item.done).map(item => (
               <Accordion key={item.id}>
                 <AccordionSummary
@@ -291,13 +295,19 @@ function App() {
                 </AccordionSummary>
                 <AccordionDetails>
                   <Typography>
-                    Storypoints: {item.storypoints} {/* Mostrar los Storypoints */}
+                    Storypoints: {item.storyPoints} {/* Mostrar los Storypoints */}
                   </Typography>
                   <Typography>
-                    Responsable: {item.responsable}  {/* Mostrar el responsable */}
+                    Assigned To: {item.assigned}  {/* Mostrar el responsable */}
                   </Typography>
                   <Typography>
-                    Completada el: <Moment format="MMM Do hh:mm:ss">{item.createdAt}</Moment>
+                    Priority: {item.priority}
+                  </Typography>
+                  <Typography>
+                    Estimated Hours: {item.estimated_Hours}
+                  </Typography>
+                  <Typography>
+                    Completed at: <Moment format="MMM Do hh:mm:ss">{item.creation_ts}</Moment>
                   </Typography>
                   <Button variant="contained" onClick={(event) => toggleDone(event, item.id, item.description, !item.done)} size="small">
                     Undo
@@ -307,22 +317,7 @@ function App() {
                   </Button>
                 </AccordionDetails>
               </Accordion>
-            ))}
-            <h2>Estadisticas</h2>
-            <Accordion className="customAccordion">
-              <AccordionSummary
-                expandIcon={<ExpandMoreIcon />}
-                aria-controls="panel1bh-content"
-                id="panel1bh-header"
-              >
-                <Typography>Estadisticas</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                
-                <Estadisticas />
-              </AccordionDetails>
-            </Accordion>
-            
+            ))}       
           </div>
         }
       </div>

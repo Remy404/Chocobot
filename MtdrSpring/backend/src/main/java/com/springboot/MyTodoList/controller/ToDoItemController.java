@@ -46,13 +46,10 @@ public class ToDoItemController {
             logger.info("addToDoItem 1");
 
             HttpHeaders responseHeaders = new HttpHeaders();
-            logger.info("addToDoItem 2");
 
             responseHeaders.set("location", "" + td.getID());
-            logger.info("addToDoItem 3");
-
             responseHeaders.set("Access-Control-Expose-Headers", "location");
-
+            
             return ResponseEntity.ok()
                     .headers(responseHeaders).build();
         } catch (IllegalArgumentException e) {

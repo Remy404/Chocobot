@@ -35,14 +35,14 @@ function Estadisticas() {
       },
       title: {
         display: true,
-        text: "Tareas pendientes - Tareas completadas",
+        text: "Pending Tasks - Completed Tasks",
       },
     },
   };
 
   return (
     <div style={{ width: '100%', maxWidth: '500px', height: '500px', overflow: 'hidden' }}>
-      <h2>Gráfica de Tareas pendientes - Tareas competadas</h2>
+      <h2>Pending Tasks to Completed Tasks Graph</h2>
       <Pie data={data} options={options} /> {/* Cambiamos de Bar a Pie */}
     </div>
   );
