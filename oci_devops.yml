@@ -32,6 +32,3 @@ steps:
     command:  cd MtdrSpring;
               source env.sh;
               (cd backend;source build.sh)
-
-
-
