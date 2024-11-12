@@ -212,7 +212,7 @@ function App() {
     
     return (
       <div className="App">
-        <h1>ChocoBot</h1>
+        <h1>ChocoBot2</h1>
         <NewItem addItem={addItem} isInserting={isInserting}/>
 
         { error && <p>Error: {error.message}</p> }
