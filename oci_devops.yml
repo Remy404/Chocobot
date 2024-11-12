@@ -25,7 +25,7 @@ steps:
               oci os object get --bucket-name reacttodo1-0lise --name pipeline.tgz --file pipeline.tgz;
               tar -xzvf pipeline.tgz;
               source env.sh;
-              cat at.cfg | docker login -u "francisco2304/a00833409@tec.mx " --password-stdin mx-queretaro-1.ocir.io
+              cat at.cfg | docker login -u "axagsvmherxp/a00833409@tec.mx " --password-stdin mx-queretaro-1.ocir.io
 
   - type: Command
     name: "Build"
