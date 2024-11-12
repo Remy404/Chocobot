@@ -172,8 +172,8 @@ function App() {
         storyPoints: newItem.storypoints,  // Puntos de historia
         assigned: newItem.responsable,
         priority: newItem.priority,
-        estimated_hours: newItem.estimatedHours,
-        expiration_ts: new Date(newItem.expirationDate),
+        estimated_Hours: parseInt(newItem.estimatedHours),
+        expiration_TS: new Date(newItem.expirationDate).toISOString(),
         done: false,
       };
     
@@ -198,8 +198,8 @@ function App() {
             "storyPoints": newItem.storypoints,  // Puntos de historia
             "assigned": newItem.responsable,
             "priority": newItem.priority,
-            "creation_ts": new Date(newItem.expirationDate),
-            "estimate_Hours": newItem.estimatedHours
+            "estimated_Hours": newItem.estimatedHours,
+            "expiration_ts": new Date(newItem.expirationDate)
           };
           setItems([newItemWithId, ...items]);
         }
@@ -307,7 +307,7 @@ function App() {
                     Estimated Hours: {item.estimated_Hours}
                   </Typography>
                   <Typography>
-                    Completed at: <Moment format="MMM Do hh:mm:ss">{item.creation_ts}</Moment>
+                    Completed at: <Moment format="MMM Do hh:mm:ss">{item.expirationDate}</Moment>
                   </Typography>
                   <Button variant="contained" onClick={(event) => toggleDone(event, item.id, item.description, !item.done)} size="small">
                     Undo

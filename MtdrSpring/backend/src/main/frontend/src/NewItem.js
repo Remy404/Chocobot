@@ -36,12 +36,10 @@ function NewItem(props) {
     }
   }
 
-  // Maneja el cambio del campo 'item'
   function handleItemChange(e) {
     setItem(e.target.value);
   }
 
-  // Maneja el cambio del campo 'storypoints'
   function handleStorypointsChange(e) {
     setStorypoints(e.target.value);
   }
@@ -75,7 +73,6 @@ function NewItem(props) {
               autoComplete="off"
               value={item}
               onChange={handleItemChange}
-              // Añade la funcionalidad de 'Enter' para agregar un ítem
               onKeyDown={event => {
                 if (event.key === 'Enter') {
                   handleSubmit(event);
@@ -88,7 +85,7 @@ function NewItem(props) {
             <input
               id="newstorypointsinput"
               placeholder="Storypoints"
-              type="number" // Asegurarse de que el campo sea numérico
+              type="number"
               value={storypoints}
               onChange={handleStorypointsChange}
             />
@@ -122,7 +119,7 @@ function NewItem(props) {
             <input
               id="newresponsableinput"
               placeholder="Responsable"
-              type="text" // Asegurarse de que el campo sea texto
+              type="text"
               value={responsable}
               onChange={handleResponsableChange}
             />
