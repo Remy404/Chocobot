@@ -22,7 +22,7 @@ steps:
   - type: Command
     name: "Docker Login"
     command:  cd MtdrSpring;
-              oci os object get --bucket-name reacttodo-nnz28 --name pipeline.tgz --file pipeline.tgz;
+              oci os object get --bucket-name reacttodo1-0lise --name pipeline.tgz --file pipeline.tgz;
               tar -xzvf pipeline.tgz;
               source env.sh;
               cat at.cfg | docker login -u "francisco2304/a00833409@tec.mx " --password-stdin mx-queretaro-1.ocir.io
