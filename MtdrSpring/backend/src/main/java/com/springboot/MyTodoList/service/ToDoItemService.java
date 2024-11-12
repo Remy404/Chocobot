@@ -8,8 +8,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 @Service
 public class ToDoItemService {
@@ -55,7 +57,7 @@ public class ToDoItemService {
             toDoItem.setDone(td.isDone());
             toDoItem.setStoryPoints(td.getStoryPoints());
             toDoItem.setPriority(td.getPriority());
-            toDoItem.setResponsable(td.getResponsable());
+            toDoItem.setAssigned(td.getAssigned());
             toDoItem.setEstimated_Hours(td.getEstimated_Hours());
             toDoItem.setEstado(td.getEstado());
             toDoItem.setExpiration_TS(td.getExpiration_TS());
@@ -85,8 +87,8 @@ public class ToDoItemService {
     }
 
     // Nuevo método para buscar tareas por nombre asignado
-    public List<ToDoItem> findByResponsable(String responsable) {
-        return toDoItemRepository.findByResponsable(responsable);
+    public List<ToDoItem> findByAssignedName(String assignedName) {
+        return toDoItemRepository.findByAssigned(assignedName);
     }
 
     private void validateEstado(String estado) {

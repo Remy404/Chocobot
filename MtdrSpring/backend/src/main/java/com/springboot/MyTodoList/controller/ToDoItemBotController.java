@@ -161,9 +161,6 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				try {
 					// Obtener la tarea por su ID
 					ToDoItem item = getToDoItemById(id).getBody();
-
-					// Comenzar a solicitar los campos para editar
-					// Mostrar la descripción actual y preguntar qué desea editar
 					SendMessage messageToTelegram = new SendMessage();
 					messageToTelegram.setChatId(chatId);
 					messageToTelegram.setText("Editing item:\nDescription: " + item.getDescription() +
@@ -190,7 +187,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				SendMessage messageToTelegram = new SendMessage();
 				messageToTelegram.setChatId(chatId);
 				messageToTelegram.setText("Please enter new story points (1-8) for this task:");
-
+ 
 				try {
 					execute(messageToTelegram); // Intentar enviar el mensaje
 				} catch (TelegramApiException e) {
@@ -228,7 +225,6 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				SendMessage messageToTelegram = new SendMessage();
 				messageToTelegram.setChatId(chatId);
 				messageToTelegram.setText("Please enter the name of the responsible developer:");
-
 				try {
 					execute(messageToTelegram); // Intentar enviar el mensaje
 				} catch (TelegramApiException e) {
@@ -243,7 +239,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 
 				// Actualizar y guardar el responsable directamente
 				ToDoItem item = getToDoItemById(id).getBody();
-				item.setResponsable(newResponsable);
+				item.setAssigned(newResponsable);
 				updateToDoItem(item, id); // Guardar el cambio en la base de datos
 
 				SendMessage messageToTelegram = new SendMessage();
@@ -294,7 +290,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				confirmationMessage.setText("Task updated successfully:\n" +
 						"Description: " + item.getDescription() +
 						"\nStory Points: " + item.getStoryPoints() +
-						"\nResponsable: " + item.getResponsable() +
+						"\nResponsable: " + item.getAssigned() +
 						"\nPriority: " + item.getPriority() +
 						"\nStatus: " + item.getEstado() +
 						"\n\nReturn to the complete list of tasks /todolist");
@@ -364,7 +360,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 						for (ToDoItem activeItem : activeItems) {
 							KeyboardRow currentRow = new KeyboardRow();
 							currentRow.add(activeItem.getDescription() + " " + BotLabels.DASH.getLabel() + " "
-									+ activeItem.getResponsable());
+									+ activeItem.getAssigned());
 							currentRow.add(activeItem.getID() + BotLabels.DASH.getLabel() + BotLabels.DONE.getLabel());
 							currentRow.add(activeItem.getID() + BotLabels.DASH.getLabel() + BotLabels.EDIT.getLabel());
 							rows.add(currentRow);
@@ -414,7 +410,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 
 				for (ToDoItem item : activeItems) {
 					KeyboardRow currentRow = new KeyboardRow();
-					currentRow.add(item.getDescription() + " " + BotLabels.DASH.getLabel() + " " + item.getResponsable());
+					currentRow.add(item.getDescription() + " " + BotLabels.DASH.getLabel() + " " + item.getAssigned());
 					currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.DONE.getLabel());
 					currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.EDIT.getLabel());
 					keyboard.add(currentRow);
@@ -425,13 +421,14 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 
 				for (ToDoItem item : doneItems) {
 					KeyboardRow currentRow = new KeyboardRow();
-					currentRow.add(item.getDescription() + " " + BotLabels.DASH.getLabel() + " " + item.getResponsable());
+					currentRow.add(item.getDescription() + " " + BotLabels.DASH.getLabel() + " " + item.getAssigned());
 					// currentRow.add(item.getDescription() == null ? "No desc" :
 					// item.getDescription());
 					currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.UNDO.getLabel());
 					currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.DELETE.getLabel());
 					keyboard.add(currentRow);
 				}
+
 				// command back to main screen
 				KeyboardRow mainScreenRowBottom = new KeyboardRow();
 				mainScreenRowBottom.add(BotLabels.LOGIN.getLabel());
@@ -506,7 +503,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 							SendMessage messageToTelegram = new SendMessage();
 							messageToTelegram.setChatId(chatId);
 
-							List<ToDoItem> userTasks = toDoItemService.findByResponsable(name);
+							List<ToDoItem> userTasks = toDoItemService.findByAssignedName(name);
 
 							if (userTasks.isEmpty()) {
 								messageToTelegram.setText("You have no tasks assigned.");
@@ -602,7 +599,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 							ToDoItem newItem = new ToDoItem();
 							newItem.setDescription(pendingDescriptions.get(chatId));
 							newItem.setStoryPoints(awaitingStorypoints.get(chatId));
-							newItem.setResponsable(awaitingResponsable.get(chatId));
+							newItem.setAssigned(awaitingResponsable.get(chatId));
 							newItem.setPriority(awaitingPriority.get(chatId));
 							newItem.setEstimated_Hours(awaitingEstimatedHours.get(chatId));
 							newItem.setEstado(awaitingEstado.get(chatId));
@@ -618,7 +615,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 							messageToTelegram.setChatId(chatId);
 							messageToTelegram.setText("New item added:\nDescription: " + newItem.getDescription()
 									+ "\nStoryPoints: " + newItem.getStoryPoints()
-									+ "\nResponsable: " + newItem.getResponsable()
+									+ "\nResponsable: " + newItem.getAssigned()
 									+ "\nPriority: " + newItem.getPriority()
 									+ "\nEstimated Hours: " + newItem.getEstimated_Hours()
 									+ "\nStatus: " + newItem.getEstado()
@@ -722,7 +719,6 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 							// Store storypoints and ask for responsable
 							awaitingStorypoints.put(chatId, storypoints);
 							awaitingResponsable.put(chatId, "");
-
 							SendMessage messageToTelegram = new SendMessage();
 							messageToTelegram.setChatId(chatId);
 							messageToTelegram.setText("Please enter the name of the responsible developer:");
@@ -765,7 +761,6 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					}
 				}
 			}
-
 		}
 
 	}
@@ -826,4 +821,25 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 		}
 	}
 
+	private void sendErrorMessage(long chatId, String text) {
+		try {
+			SendMessage errorMessage = new SendMessage();
+			errorMessage.setChatId(chatId);
+			errorMessage.setText(text);
+			execute(errorMessage);
+		} catch (TelegramApiException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void sendConfirmationMessage(long chatId, String text) {
+		try {
+			SendMessage confirmMessage = new SendMessage();
+			confirmMessage.setChatId(chatId);
+			confirmMessage.setText(text);
+			execute(confirmMessage);
+		} catch (TelegramApiException e) {
+			e.printStackTrace();
+		}
+	}
 }

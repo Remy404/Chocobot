@@ -103,9 +103,9 @@ public class ToDoItemController {
         }
     }
 
-    @GetMapping(value = "/todolist/responsable/{responsable}")
-    public ResponseEntity<List<ToDoItem>> getItemsByResponsable(@PathVariable String responsable) {
-    List<ToDoItem> items = toDoItemRepository.findByResponsable(responsable);
+    @GetMapping(value = "/todolist/assigned/{assigned}")
+    public ResponseEntity<List<ToDoItem>> getItemsByAssigned(@PathVariable String assigned) {
+    List<ToDoItem> items = toDoItemRepository.findByAssigned(assigned);
         if (items.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }

@@ -1,10 +1,12 @@
 package com.springboot.MyTodoList.model;
 
 import javax.persistence.*;
+import javax.persistence.criteria.CriteriaBuilder.In;
+
 import java.time.OffsetDateTime;
 
 /*
-    Representation of the TODOITEM table that exists already
+    representation of the TODOITEM table that exists already
     in the autonomous database
  */
 @Entity
@@ -19,37 +21,37 @@ public class ToDoItem {
 
     @Column(name = "CREATION_TS")
     OffsetDateTime creation_ts;
-
+  
     @Column(name = "ESTADO")
     String estado;
-
+  
     @Column(name = "DONE")
     Boolean done;
 
-    @Column(name = "STORYPOINTS")
+    @Column(name = "STORYPOINTS") 
     Integer storyPoints;
 
     @Column(name = "PRIORITY")
     String priority;
 
-    @Column(name = "RESPONSABLE") // Updated from ASSIGNED to RESPONSABLE
-    String responsable;
-
+    @Column(name = "ASSIGNED")
+    String assigned;
+    
     @Column(name = "ESTIMATED_HOURS")
     Integer estimated_hours;
 
     @Column(name = "EXPIRATION_TS")
     OffsetDateTime expiration_ts;
 
-    public ToDoItem(int ID, String description, OffsetDateTime creation_ts, Boolean done, Integer storyPoints, String priority, String responsable, Integer estimated_hours, OffsetDateTime expiration_ts, String estado) {
-        this.ID = ID; 
-        this.description = description; 
-        this.creation_ts = creation_ts; 
-        this.done = done; 
+    public ToDoItem(int ID, String description, OffsetDateTime creation_ts, Boolean done, Integer storyPoints, String priority, String assigned, Integer estimated_hours, OffsetDateTime expiration_ts, String estado) {
+        this.ID = ID;
+        this.description = description;
+        this.creation_ts = creation_ts;
+        this.done = done;
         this.estado = estado;
         this.storyPoints = storyPoints; 
-        this.priority = priority; 
-        this.responsable = responsable; // Updated 
+        this.priority = priority;
+        this.assigned = assigned;
         this.estimated_hours = estimated_hours;
         this.expiration_ts = expiration_ts;
     }
@@ -113,12 +115,12 @@ public class ToDoItem {
         this.priority = priority;
     }
 
-    public String getResponsable() { // Updated
-        return responsable;
+    public String getAssigned() {
+        return assigned;
     }
 
-    public void setResponsable(String responsable) { // Updated
-        this.responsable = responsable;
+    public void setAssigned(String assigned) {
+        this.assigned = assigned;
     }
 
     public Integer getEstimated_Hours() {
@@ -147,7 +149,7 @@ public class ToDoItem {
                 ", estado=" + estado +
                 ", storyPoints=" + storyPoints +
                 ", priority='" + priority + '\'' +
-                ", responsable='" + responsable + '\'' + // Updated
+                ", assigned='" + assigned + '\'' + 
                 ", estimated_hours='" + estimated_hours +
                 ", expiration_ts='" + expiration_ts +
                 '}';
