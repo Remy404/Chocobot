@@ -67,6 +67,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			"A00833409@tec.mx", "Francisco",
 			"A01383541@tec.mx", "Facundo",
 			"A01174206@tec.mx", "Alejandro",
+			"test@choco.com", "prueba",
 			"A00831554@tec.mx", "Saúl");
 
 	private Map<Long, String> loggedInUsers = new HashMap<>();

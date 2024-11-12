@@ -280,7 +280,7 @@ function App() {
 
             {/* Sección de Tareas completadas */}
             <h2>Tareas completadas</h2>
-            {items.filter(item => item.done).map(item => (
+            {items.filter(item => item.done && (selectedDeveloper === "" || item.responsable === selectedDeveloper)).map(item => (
               <Accordion key={item.id}>
                 <AccordionSummary
                   expandIcon={<ExpandMoreIcon />}
@@ -317,10 +317,10 @@ function App() {
               >
                 <Typography>Estadisticas</Typography>
               </AccordionSummary>
-              <AccordionDetails>
+              {/* <AccordionDetails>
                 
                 <Estadisticas />
-              </AccordionDetails>
+              </AccordionDetails> */}
             </Accordion>
             
           </div>
