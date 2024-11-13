@@ -9,7 +9,7 @@ RUN mkdir -p /mtdrworkshop/creds
 ENV db_user="TODOUSER"
 #ENV ui_username="admin"
 #ENV ui_password="none0001"
-ENV dbpassword="Chocolabs2024"
+#ENV dbpassword="Chocolabs2024"
 ENV db_url="jdbc:oracle:thin:@reacttodo10lise_tp?TNS_ADMIN=/mtdrworkshop/creds"
 ENV driver_class_name="oracle.jdbc.OracleDriver"
 ENV _JAVA_OPTIONS=-Dlogging.level.org.springframework=INFO
