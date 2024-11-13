@@ -1,7 +1,7 @@
 spring:
   datasource:
     driver_class_name: oracle.jdbc.OracleDriver
-    password: None10001000
+    password: Chocolabs2024
     url: jdbc:oracle:thin:@reacttodo10lise_tp?TNS_ADMIN=/mtdrworkshop/creds
     username: TODOUSER
   jpa:
