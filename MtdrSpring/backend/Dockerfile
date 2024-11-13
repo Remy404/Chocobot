@@ -8,8 +8,8 @@ RUN mkdir -p /mtdrworkshop/creds
 #COPY /Wallet_reacttodo10lise /mtdrworkshop/creds
 ENV db_user="TODOUSER"
 #ENV ui_username="admin"
-#ENV ui_password=" EraParaAyer23!"
-ENV dbpassword=" EraParaAyer23!"
+#ENV ui_password="EraParaAyer23!"
+ENV dbpassword="EraParaAyer23!"
 ENV db_url="jdbc:oracle:thin:@reacttodo10lise_tp?TNS_ADMIN=/mtdrworkshop/creds"
 ENV driver_class_name="oracle.jdbc.OracleDriver"
 ENV _JAVA_OPTIONS=-Dlogging.level.org.springframework=INFO
