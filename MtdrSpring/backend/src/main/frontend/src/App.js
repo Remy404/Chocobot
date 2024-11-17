@@ -212,8 +212,8 @@ function App() {
     }
     
     return (
-      <div className="App" style={{ padding: '100px' }}>
-        <h1>ChocoBot2</h1>
+      <div className="App" style={{ padding: '60px' }}>
+        <h1>ChocoLabs</h1>
         <NewItem addItem={addItem} isInserting={isInserting}/>
 
         { error && <p>Error: {error.message}</p> }
@@ -273,7 +273,7 @@ function App() {
                   <Typography>
                     Estimated Hours: {item.estimated_Hours}
                   </Typography>
-                  <Button variant="contained" onClick={() => enableEdit(item)} size="small">
+                  <Button style={{ marginRight: "10px" }} variant="contained" onClick={() => enableEdit(item)} size="small">
                     Edit
                   </Button>
                   <Button variant="contained" onClick={(event) => toggleDone(event, item.id, item.description, !item.done)} size="small">
@@ -284,7 +284,7 @@ function App() {
             ))}
 
             {/* Sección de Tareas completadas */}
-            <h2>Completed Tasks</h2>
+            <h2 style={{ marginTop: "30px" }}>Completed Tasks</h2>
             {items.filter(item => item.done).map(item => (
               <Accordion key={item.id}>
                 <AccordionSummary
@@ -310,7 +310,7 @@ function App() {
                   <Typography>
                     Completed at: <Moment format="MMM Do hh:mm:ss">{item.expirationDate}</Moment>
                   </Typography>
-                  <Button variant="contained" onClick={(event) => toggleDone(event, item.id, item.description, !item.done)} size="small">
+                  <Button style={{ marginRight: "10px" }} variant="contained" onClick={(event) => toggleDone(event, item.id, item.description, !item.done)} size="small">
                     Undo
                   </Button>
                   <Button startIcon={<DeleteIcon />} variant="contained" onClick={() => deleteItem(item.id)} size="small">

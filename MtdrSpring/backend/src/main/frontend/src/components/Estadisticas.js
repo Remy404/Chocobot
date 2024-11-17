@@ -65,10 +65,11 @@ function Estadisticas() {
     plugins: {
       legend: {
         position: "top",
+        color: "white"
       },
       title: {
         display: true,
-        text: "Pending Tasks - Completed Tasks",
+        color: "white",
       },
     },
   };
@@ -90,23 +91,28 @@ function Estadisticas() {
     plugins: {
       legend: {
         position: "top",
+        color: "white",
       },
       title: {
         display: true,
-        text: "Story Points por Desarrollador",
+        color: "white",
       },
     },
   };
 
   return (
-    <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', alignItems: 'center' }}>
-      <div style={{ width: '45%', height: '400px' }}>
+    <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', alignItems: 'center', marginTop: '30px' }}>
+      <div>
         <h2>Pending Tasks to Completed Tasks</h2>
-        <Pie data={pieData} options={pieOptions} />
+        <div style={{ height: "400px" }}>
+          <Pie data={pieData} options={pieOptions}/>
+        </div>
       </div>
-      <div style={{ width: '45%', height: '400px' }}>
+      <div>
         <h2>Story Points por Desarrollador</h2>
-        <Bar data={barData} options={barOptions} />
+        <div style={{ height: "400px" }}>
+          <Bar data={barData} options={barOptions}/>
+        </div>
       </div>
     </div>
   );
