@@ -1,4 +1,4 @@
-import { Pie, Bar } from "react-chartjs-2";
+import { Pie, Bar, Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -8,10 +8,22 @@ import {
   Legend,
   ArcElement,
   BarElement,
+  PointElement,
+  LineElement,
 } from "chart.js";
 import { useEffect, useState } from "react";
 
-ChartJS.register(CategoryScale, LinearScale, Title, Tooltip, Legend, ArcElement, BarElement);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+  BarElement,
+  PointElement,
+  LineElement
+);
 
 function Estadisticas() {
   const [completedCount, setCompletedCount] = useState(0);
@@ -23,13 +35,11 @@ function Estadisticas() {
       const response = await fetch("/todolist"); // Usa API_LIST aquí si es necesario
       const tasks = await response.json();
 
-      // Calcular tareas completadas y pendientes
       const completed = tasks.filter(task => task.done === true).length;
       const pending = tasks.filter(task => task.done === false).length;
       setCompletedCount(completed);
       setPendingCount(pending);
 
-      // Calcular story points por desarrollador
       const storyPointsByDeveloper = tasks.reduce((acc, task) => {
         if (task.assigned && task.storyPoints) {
           acc[task.assigned] = (acc[task.assigned] || 0) + task.storyPoints;
@@ -51,10 +61,7 @@ function Estadisticas() {
       {
         label: "Tareas",
         data: [completedCount, pendingCount],
-        backgroundColor: [
-          "rgba(255, 99, 132, 0.6)",
-          "rgba(255, 159, 64, 0.6)"
-        ],
+        backgroundColor: ["rgba(255, 99, 132, 0.6)", "rgba(255, 159, 64, 0.6)"],
       },
     ],
   };
@@ -65,11 +72,9 @@ function Estadisticas() {
     plugins: {
       legend: {
         position: "top",
-        color: "white"
       },
       title: {
         display: true,
-        color: "white",
       },
     },
   };
@@ -91,27 +96,60 @@ function Estadisticas() {
     plugins: {
       legend: {
         position: "top",
-        color: "white",
       },
       title: {
         display: true,
-        color: "white",
+      },
+    },
+  };
+
+  // Gráfica de líneas hardcodeada
+  const lineData = {
+    labels: ["Enero", "Febrero", "Marzo", "Abril", "Mayo"],
+    datasets: [
+      {
+        label: "Tareas Creadas",
+        data: [12, 19, 7, 15, 10],
+        borderColor: "rgba(54, 162, 235, 1)",
+        backgroundColor: "rgba(54, 162, 235, 0.5)",
+        fill: true,
+        tension: 0.4,
+      },
+    ],
+  };
+
+  const lineOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: "top",
+      },
+      title: {
+        display: true,
+        text: "Tareas Creadas por Mes",
       },
     },
   };
 
   return (
-    <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', alignItems: 'center', marginTop: '30px' }}>
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', justifyContent: 'center', alignItems: 'center', marginTop: '30px' }}>
       <div>
         <h2>Pending Tasks to Completed Tasks</h2>
         <div style={{ height: "400px" }}>
-          <Pie data={pieData} options={pieOptions}/>
+          <Pie data={pieData} options={pieOptions} />
         </div>
       </div>
       <div>
         <h2>Story Points por Desarrollador</h2>
         <div style={{ height: "400px" }}>
-          <Bar data={barData} options={barOptions}/>
+          <Bar data={barData} options={barOptions} />
+        </div>
+      </div>
+      <div>
+        <h2>Tareas Creadas por Mes</h2>
+        <div style={{ height: "400px" }}>
+          <Line data={lineData} options={lineOptions} />
         </div>
       </div>
     </div>
