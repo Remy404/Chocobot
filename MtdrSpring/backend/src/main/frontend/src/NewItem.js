@@ -1,35 +1,29 @@
-/*
-## MyToDoReact version 1.0.
-##
-## Copyright (c) 2022 Oracle, Inc.
-## Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl/
-*/
-/*
- * Component that supports creating a new todo item.
- * @author  jean.de.lavarene@oracle.com
- */
-
 import React, { useRef, useState } from "react";
 import Button from '@mui/material/Button';
 
 function NewItem(props) {
-  // Se agregan dos estados: uno para 'item' y otro para 'storypoints'
   const [item, setItem] = useState('');
-  const [storypoints, setStorypoints] = useState(); // Nuevo estado para storypoints
-  const [responsable, setResponsable] = useState('');
-  const [priority, setPriority] = useState();
-  const [estimatedHours, setEstimatedHours] = useState();
+  const [storypoints, setStorypoints] = useState(0); 
+  const [priority, setPriority] = useState('');
+  const [estimatedHours, setEstimatedHours] = useState(0);
   const [expirationDate, setExpirationDate] = useState();
+  const [assigned, setAssigned] = useState('unassigned'); // Estado para el selector
 
   const formRef = useRef();
 
-  // Modificamos el handleSubmit para manejar tanto item como storypoints
   function handleSubmit(e) {
-    if (!item.trim() || !storypoints.trim() || !responsable.trim() || !priority.trim() || !estimatedHours.trim() || !expirationDate.trim()) { // Validar ambos campos
+    if (
+      !item.trim() || 
+      !storypoints || 
+      !assigned.trim() || 
+      !priority.trim() || 
+      !estimatedHours || 
+      !expirationDate
+    ) {
       return;
     }
-    // addItem ahora recibe un objeto con 'item' y 'storypoints'
-    props.addItem({ item, storypoints, responsable, priority, estimatedHours, expirationDate });
+
+    props.addItem({ item, storypoints, assigned, priority, estimatedHours, expirationDate});
 
     if (formRef.current) {
       formRef.current.reset();
@@ -44,10 +38,6 @@ function NewItem(props) {
     setStorypoints(e.target.value);
   }
 
-  function handleResponsableChange(e){
-    setResponsable(e.target.value);
-  }
-
   function handlePriorityChange(e) {
     setPriority(e.target.value);
   }
@@ -57,7 +47,11 @@ function NewItem(props) {
   }
 
   function handleExpirationDateChange(e) {
-    setExpirationDate(e.target.value)
+    setExpirationDate(e.target.value);
+  }
+
+  function handleAssignedChange(e) {
+    setAssigned(e.target.value);  // Aquí se asegura que el valor seleccionado se guarde en el estado
   }
 
   return (
@@ -73,7 +67,7 @@ function NewItem(props) {
               autoComplete="off"
               value={item}
               onChange={handleItemChange}
-              onKeyDown={event => {
+              onKeyDown={(event) => {
                 if (event.key === 'Enter') {
                   handleSubmit(event);
                 }
@@ -92,20 +86,23 @@ function NewItem(props) {
           </div>
         </div>
         <div className="newItemFormSection">
-          <div>
-            <label htmlFor="newresponsableinput">Priority</label>
-            <input
-              id="newresponsableinput"
-              placeholder="Priority"
-              type="text"
+        <div>
+            <label htmlFor="newPriorityInput">Priority</label>
+            <select
+              id="newPriorityInput"
               value={priority}
               onChange={handlePriorityChange}
-            />
+            >
+              <option value="">Select a priority</option>
+              <option value="Low">Low</option>
+              <option value="Mid">Mid</option>
+              <option value="High">High</option>
+            </select>
           </div>
           <div>
-            <label htmlFor="estimatedhours">Estimated Time of Completion</label>
+            <label htmlFor="estimatedHours">Estimated Time of Completion</label>
             <input
-              id="estimatedhours"
+              id="estimatedHours"
               placeholder="ETC in hours"
               type="number"
               value={estimatedHours}
@@ -113,27 +110,31 @@ function NewItem(props) {
             />
           </div>
         </div>
-        <div className="newItemFormSection">          
+        <div className="newItemFormSection">
           <div>
-            <label htmlFor="newresponsableinput">Responsable</label>
-            <input
-              id="newresponsableinput"
-              placeholder="Responsable"
-              type="text"
-              value={responsable}
-              onChange={handleResponsableChange}
-            />
+            <label htmlFor="newAssignedInput">Assigned To</label>
+            <select
+              id="newAssignedInput"
+              value={assigned}
+              onChange={handleAssignedChange}
+            >
+              <option value="unassigned">Select a developer</option>
+              <option value="Franco">Franco</option>
+              <option value="Facundo">Facundo</option>
+              <option value="Saul">Saul</option>
+              <option value="Alejandro">Alejandro</option>
+            </select>
           </div>
           <div>
-            <label htmlFor="expirationdate">Expiration date</label> 
+            <label htmlFor="NewExpirationDate">Expiration date</label>
             <input
-              id="expirationdate"
+              id="NewExpirationDate"
               placeholder="Expiration date"
               type="date"
               value={expirationDate}
               onChange={handleExpirationDateChange}
             />
-          </div>    
+          </div>
         </div>
         <Button
           className="AddButton"

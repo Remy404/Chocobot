@@ -164,14 +164,14 @@ function App() {
           });
     }, []);
 
-    function addItem(newItem) {  // newItem ahora es un objeto con 'item' y 'storypoints'
+    function addItem(newItem) {  // newItem ahora es un objeto con 'descripcion', 'storypoints', 'assigned', 'priority', 'estimated_Hours', 'expiration_TS' y 'done'
       setInserting(true);
       
       // Estructura de datos con la descripción y los storypoints
       var data = { 
         description: newItem.item,      // Descripción del ítem
         storyPoints: newItem.storypoints,  // Puntos de historia
-        assigned: newItem.responsable,
+        assigned: newItem.assigned,
         priority: newItem.priority,
         estimated_Hours: parseInt(newItem.estimatedHours),
         expiration_TS: new Date(newItem.expirationDate).toISOString(),
@@ -197,7 +197,7 @@ function App() {
             "id": id, 
             "description": newItem.item,  // Descripción
             "storyPoints": newItem.storypoints,  // Puntos de historia
-            "assigned": newItem.responsable,
+            "assigned": newItem.assigned,
             "priority": newItem.priority,
             "estimated_Hours": newItem.estimatedHours,
             "expiration_ts": new Date(newItem.expirationDate)
