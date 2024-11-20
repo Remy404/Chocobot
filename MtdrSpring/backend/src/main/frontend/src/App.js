@@ -285,7 +285,7 @@ function App() {
 
             {/* Sección de Tareas completadas */}
             <h2 style={{ marginTop: "30px" }}>Completed Tasks</h2>
-            {items.filter(item => item.done).map(item => (
+            {items.filter(item => item.done && (selectedDeveloper === "" || item.assigned === selectedDeveloper)).map(item => (
               <Accordion key={item.id}>
                 <AccordionSummary
                   expandIcon={<ExpandMoreIcon />}
