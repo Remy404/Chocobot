@@ -17,23 +17,25 @@ function NewItem(props) {
   const [item, setItem] = useState('');
   const [storypoints, setStorypoints] = useState(); // Nuevo estado para storypoints
   const [responsable, setResponsable] = useState('');
-  const [priority, setPriority] = useState();
+  const [priority, setPriority] = useState('');
   const [estimatedHours, setEstimatedHours] = useState();
   const [expirationDate, setExpirationDate] = useState();
 
-  const formRef = useRef();
-
   // Modificamos el handleSubmit para manejar tanto item como storypoints
   function handleSubmit(e) {
-    if (!item.trim() || !storypoints.trim() || !responsable.trim() || !priority.trim() || !estimatedHours.trim() || !expirationDate.trim()) { // Validar ambos campos
+    e.preventDefault();
+
+    if (!storypoints.trim() || !responsable.trim() || !priority.trim() || !estimatedHours.trim() || !expirationDate.trim()) { // Validar ambos campos
       return;
     }
     // addItem ahora recibe un objeto con 'item' y 'storypoints'
     props.addItem({ item, storypoints, responsable, priority, estimatedHours, expirationDate });
 
-    if (formRef.current) {
-      formRef.current.reset();
-    }
+    setResponsable('');
+    setStorypoints('');
+    setPriority('');
+    setExpirationDate('');
+    setEstimatedHours('');
   }
 
   function handleItemChange(e) {
@@ -62,7 +64,7 @@ function NewItem(props) {
 
   return (
     <div id="newinputform">
-      <form ref={formRef} className="newItemForm">
+      <form className="newItemForm">
         <div className="newItemFormSection">
           <div>
             <label htmlFor="newiteminput">Task Name</label>
@@ -93,14 +95,13 @@ function NewItem(props) {
         </div>
         <div className="newItemFormSection">
           <div>
-            <label htmlFor="newresponsableinput">Priority</label>
-            <input
-              id="newresponsableinput"
-              placeholder="Priority"
-              type="text"
-              value={priority}
-              onChange={handlePriorityChange}
-            />
+            <label htmlFor="newpriorityinput">Priority</label>
+            <select name="priority" id="newpriorityinput" onChange={handlePriorityChange} value={priority}>
+              <option value="" disabled>Select</option>
+              <option value="Low">Low</option>
+              <option value="Mid">Mid</option>
+              <option value="High">High</option>
+            </select>
           </div>
           <div>
             <label htmlFor="estimatedhours">Estimated Time of Completion</label>

@@ -13,15 +13,16 @@ import { useEffect, useState } from "react";
 
 ChartJS.register(CategoryScale, LinearScale, Title, Tooltip, Legend, ArcElement, BarElement);
 
-function Estadisticas() {
+function Estadisticas(props) {
   const [completedCount, setCompletedCount] = useState(0);
   const [pendingCount, setPendingCount] = useState(0);
   const [storyPointsData, setStoryPointsData] = useState({ labels: [], values: [] });
 
   useEffect(() => {
-    const fetchData = async () => {
-      const response = await fetch("/todolist"); // Usa API_LIST aquí si es necesario
-      const tasks = await response.json();
+    const tasks = props.tasks;
+    if (tasks.length === 0) {
+        return;
+      }
 
       // Calcular tareas completadas y pendientes
       const completed = tasks.filter(task => task.done === true).length;
@@ -40,10 +41,7 @@ function Estadisticas() {
       const labels = Object.keys(storyPointsByDeveloper);
       const values = Object.values(storyPointsByDeveloper);
       setStoryPointsData({ labels, values });
-    };
-
-    fetchData();
-  }, []);
+  }, [props.tasks]);
 
   const pieData = {
     labels: ["Completadas", "Pendientes"],
@@ -78,7 +76,7 @@ function Estadisticas() {
     labels: storyPointsData.labels.length > 0 ? storyPointsData.labels : ["Developer A", "Developer B"],
     datasets: [
       {
-        label: "Story Points por Desarrollador",
+        label: "StoryPoints finished per developer",
         data: storyPointsData.values.length > 0 ? storyPointsData.values : [5, 3],
         backgroundColor: "rgba(75, 192, 192, 0.6)",
       },
@@ -101,15 +99,15 @@ function Estadisticas() {
   };
 
   return (
-    <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', alignItems: 'center', marginTop: '30px' }}>
+    <div style={{ display: 'flex', gap: '40px', justifyContent: 'center', alignItems: 'center', marginTop: '30px' }}>
       <div>
-        <h2>Pending Tasks to Completed Tasks</h2>
+        <h3>Pending Tasks vs Completed Tasks</h3>
         <div style={{ height: "400px" }}>
           <Pie data={pieData} options={pieOptions}/>
         </div>
       </div>
       <div>
-        <h2>Story Points por Desarrollador</h2>
+        <h3>StoryPoints finished per developer</h3>
         <div style={{ height: "400px" }}>
           <Bar data={barData} options={barOptions}/>
         </div>
