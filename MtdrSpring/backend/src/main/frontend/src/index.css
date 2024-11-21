@@ -6,8 +6,7 @@
 */
 body {
     /* from the redwood theme */
-
-    background-color: #245D63;
+    background: #1a1919;
     width: 100%;
     max-width: 60rem;
     margin: 0 auto;
@@ -17,125 +16,184 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-  .App {
-    background: #322e2a;
-    color: #FEF9F2;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    font-size: max(12px,min(2vw, 18px)); /*calc(1vw + 1vmin);*/
-    margin: 2rem 0 4rem 0;
-    padding: 1rem;
-    position: relative;
-    box-shadow: 0 10px 18px 0 #1d4d4b, 0 4.5rem 8rem 0 #5fb9b5;
-    border-radius: 0.5rem;
-  }
-  div#maincontent, div#newinputform form {
-    width: 95%;
-  }
-  div#maincontent {
-    margin: 0;
-    padding: 0;
-  }
-  h1 {
-    margin: 0.5rem 0 1rem 0;
-    padding: 0;
-  }
-  h2 {
-    margin: 0.1rem 0 0.1rem 0;
-    padding: 0;
-  }
-  #newiteminput {
-    width: 100%;
-  }
-  div#newinputform {
-    width: 100%;
-  }
-  div#newinputform form{
-    display: flex;
-    flex-direction: row;
-    margin: 0 auto;
-  }
-  #donelist {
-    margin: 0;
-    padding: 0;
-  }
-  table#itemlistNotDone {
-    margin-bottom: 2rem;
-  }
-  table#itemlistDone {
-    margin-bottom: 3rem;
-  }
-  table.itemlist {
-    margin-top: 0.7rem;
-    border-collapse: collapse;
-    margin-bottom: 1rem;
-  }
-  table.itemlist td {
-    border-bottom: solid 1px #de7f11;
-    padding: .5rem;
-  }
-  table.itemlist td.description {
-    width: 100%;
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-  table.itemlist td.date {
-    font-size: max(10px,min(1.5vw, 14px));
-    color: grey;
-    white-space: nowrap;
-    padding-right: 0;
-    padding-left: 0;
-  }
-  table.itemlist tr:hover {
-    background-color: #161513;
-  }
-  input {
-    font-family: inherit;
-    font-size: 100%;
-    line-height: 1;
-    margin: 0;
-  }
-  button,
-  input {
-    overflow: visible;
-  }
-  input[type="text"] {
-    border-radius: 0.3rem;
-    padding-left: 10px;
-  }
-  button.AddButton,
-  button.DeleteButton,
-  button.AddButton,
-  button.DoneButton {
-    font-size: max(8px,min(2vw, 12px));
-    padding: 0.35em 0.5em;
-    color:#161513;
-  }
-  /* from the redwood theme */
-  button.AddButton {
-    color: #FEF9F2;
-    background-color: #5F7D4F;
-  }
-  button.AddButton:hover {
-    background-color: #6F915D;
-  }
-  button.DeleteButton {
-    color: #FEF9F2;
-    background-color:  #D63B25;
-  }
-  button.DeleteButton:hover {
-    background-color: #EC4F3A
-  }
-  button.DoneButton {
-    background-color: #FBF9F8;
-  }
-  button.DoneButton:hover {
-    background-color: #D4CFCA;
-  }
+.App {
+  background: #322e2a;
+  color: #FEF9F2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: max(12px,min(2vw, 18px)); /*calc(1vw + 1vmin);*/
+  margin: 2rem 0 4rem 0;
+  padding: 1rem;
+  position: relative;
+  box-shadow: 0 10px 18px 0 #663838,0 4.5rem 8rem 0 #bf3030;
+  border-radius: 0.5rem;
+}
+#maincontent {
+  width: 95%;
+  margin: 0;
+  padding: 0;
+  margin-top: 30px;
+}
+h1 {
+  margin: 0.5rem 0 1rem 0;
+  padding: 0;
+}
+h2 {
+  margin: 0.1rem 0 0.1rem 0;
+  padding: 0;
+}
+div#newinputform {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#donelist {
+  margin: 0;
+  padding: 0;
+}
+table#itemlistNotDone {
+  margin-bottom: 2rem;
+}
+table#itemlistDone {
+  margin-bottom: 3rem;
+}
+table.itemlist {
+  margin-top: 0.7rem;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+}
+table.itemlist td {
+  border-bottom: solid 1px #de7f11;
+  padding: .5rem;
+}
+table.itemlist td.description {
+  width: 100%;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+table.itemlist td.date {
+  font-size: max(10px,min(1.5vw, 14px));
+  color: grey;
+  white-space: nowrap;
+  padding-right: 0;
+  padding-left: 0;
+}
+table.itemlist tr:hover {
+  background-color: #161513;
+}
+input {
+  font-family: inherit;
+  font-size: 100%;
+  line-height: 1;
+  margin: 0;
+}
+button,
+input {
+  overflow: visible;
+}
+input[type="text"] {
+  border-radius: 0.3rem;
+  padding-left: 10px;
+}
+button.AddButton,
+button.DeleteButton,
+button.AddButton,
+button.DoneButton {
+  font-size: max(8px,min(2vw, 12px));
+  padding: 0.35em 0.5em;
+  color:#161513;
+  width: 100%;
+}
+/* from the redwood theme */
+button.AddButton {
+  color: #FEF9F2;
+  background-color: #5F7D4F;
+}
+button.AddButton:hover {
+  background-color: #6F915D;
+}
+button.DeleteButton {
+  color: #FEF9F2;
+  background-color:  #D63B25;
+}
+button.DeleteButton:hover {
+  background-color: #EC4F3A
+}
+button.DoneButton {
+  background-color: #FBF9F8;
+}
+button.DoneButton:hover {
+  background-color: #D4CFCA;
+}
 
-  .customAccordion {
-    max-width: 500px; /* Ajusta el ancho */
-    max-height: 300px; /* Ajusta la altura */
-    overflow: auto; /* Añade scroll si es necesario */
-  }
+.customAccordion {
+  max-width: 500px; /* Ajusta el ancho */
+  max-height: 300px; /* Ajusta la altura */
+  overflow: auto; /* Añade scroll si es necesario */
+}
+
+.newItemForm {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 600px;
+}
+
+.newItemForm input {
+  height: 25px;
+  border: 0;
+  border-radius: 5px;
+}
+
+.newItemForm select {
+  height: 28px;
+  border: 0;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.newItemFormSection {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
+}
+
+.newItemFormSection div {
+  display: flex;
+  flex-direction: column;
+  width: 50%;
+}
+
+.newItemFormSection div label {
+  font-size: small;
+  color: rgba(255, 255, 255, 0.816);
+}
+
+.filters-section {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 5px;
+}
+
+.filters-section div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.filters-section select {
+  height: 28px;
+  border: 0;
+  border-radius: 5px;
+}
+
+.graphs-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}

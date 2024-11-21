@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -83,6 +84,26 @@ public class ToDoItemService {
             return toDoItemRepository.save(toDoItem); // Guarda los cambios
         } else {
             return null; // Si no se encuentra el item, regresa null
+        }
+    }
+
+    public ToDoItem updateDoneStatus(int id, boolean isDone) {
+        Optional<ToDoItem> toDoItemData = toDoItemRepository.findById(id);
+        if (toDoItemData.isPresent()) {
+            ToDoItem toDoItem = toDoItemData.get();
+            toDoItem.setDone(isDone);
+
+            if (isDone) {
+                // Set 'finished_ts' to the current timestamp if done is true
+                toDoItem.setFinished_TS(OffsetDateTime.now());
+            } else {
+                // Reset 'finished_ts' to null if done is false
+                toDoItem.setFinished_TS(null);
+            }
+
+            return toDoItemRepository.save(toDoItem); // Save the updated item
+        } else {
+            return null; // Return null if the item is not found
         }
     }
 

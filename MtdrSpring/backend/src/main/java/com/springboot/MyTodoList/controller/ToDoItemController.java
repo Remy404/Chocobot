@@ -12,6 +12,7 @@ import com.springboot.MyTodoList.repository.ToDoItemRepository;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 public class ToDoItemController {
@@ -46,13 +47,10 @@ public class ToDoItemController {
             logger.info("addToDoItem 1");
 
             HttpHeaders responseHeaders = new HttpHeaders();
-            logger.info("addToDoItem 2");
 
             responseHeaders.set("location", "" + td.getID());
-            logger.info("addToDoItem 3");
-
             responseHeaders.set("Access-Control-Expose-Headers", "location");
-
+            
             return ResponseEntity.ok()
                     .headers(responseHeaders).build();
         } catch (IllegalArgumentException e) {
@@ -101,5 +99,35 @@ public class ToDoItemController {
     } catch (Exception e) {
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @PutMapping(value = "/todolist/{id}/done")
+    public ResponseEntity<ToDoItem> updateToDoItemDoneStatus(@PathVariable int id, @RequestBody Map<String, Boolean> request) {
+        try {
+            if (!request.containsKey("done")) {
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
+
+            boolean isDone = request.get("done");
+            ToDoItem updatedItem = toDoItemService.updateDoneStatus(id, isDone);
+
+            if (updatedItem != null) {
+                return new ResponseEntity<>(updatedItem, HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            logger.error("Error updating 'done' status for ToDoItem with id " + id, e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping(value = "/todolist/assigned/{assigned}")
+    public ResponseEntity<List<ToDoItem>> getItemsByAssigned(@PathVariable String assigned) {
+    List<ToDoItem> items = toDoItemRepository.findByAssigned(assigned);
+        if (items.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(items, HttpStatus.OK);
     }
 }

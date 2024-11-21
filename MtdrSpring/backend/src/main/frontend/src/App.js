@@ -15,10 +15,10 @@ import React, { useState, useEffect } from 'react';
 import NewItem from './NewItem';
 import API_LIST from './API';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Button, TableBody, CircularProgress, Accordion, AccordionSummary, AccordionDetails, Typography } from '@mui/material';
+import { Button, CircularProgress, Accordion, AccordionSummary, AccordionDetails, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Moment from 'react-moment';
-import Estadisticas from './components/Estadisticas'
+import Estadisticas from './components/Estadisticas';
 
 /* In this application we're using Function Components with the State Hooks
  * to manage the states. See the doc: https://reactjs.org/docs/hooks-state.html
@@ -35,10 +35,12 @@ function App() {
     const [editItemId, setEditItemId] = useState(null);
     const [editItemText, setEditItemText] = useState('');
 
-    const [selectedDeveloper, setSelectedDeveloper] = useState(''); // Estado para almacenar el desarrollador seleccionado
-
     // Extraer todos los responsables únicos de la lista de items
-    const uniqueDevelopers = [...new Set(items.map(item => item.responsable))];
+    const [selectedDeveloper, setSelectedDeveloper] = useState(''); // Estado para almacenar el desarrollador seleccionado
+    const uniqueDevelopers = [...new Set(items.map(item => item.assigned))];
+
+    const [selectedSprint, setSelectedSprint] = useState('');
+    const sprints = [...new Set(items.map(item => formatDate(item.expiration_TS)))];
 
     function deleteItem(deleteId) {
       fetch(API_LIST + "/" + deleteId, {
@@ -62,11 +64,26 @@ function App() {
       );
     }
 
-    function toggleDone(event, id, description, done, responsable) {
+    function formatDate(date) {
+        var d = new Date(date),
+            month = '' + (d.getMonth() + 1),
+            day = '' + d.getDate(),
+            year = d.getFullYear();
+
+        if (month.length < 2)
+            month = '0' + month;
+        if (day.length < 2)
+            day = '0' + day;
+
+        return [year, month, day].join('-');
+    }
+
+    function toggleDone(event, id, done) {
       event.preventDefault();
-      modifyItem(id, description, done, responsable).then(
-        () => { reloadOneItem(id); },
-        (error) => { setError(error); }
+
+      changeItemState(id, done).then(
+          () => { reloadOneItem(id); },
+          (error) => { setError(error); }
       );
     }
 
@@ -86,7 +103,8 @@ function App() {
                 ...x,
                 'description': result.description,
                 'done': result.done,
-                'responsable': result.responsable
+                'assigned': result.assigned,
+                'finished_TS': result.finished_TS,
               } : x));
             setItems(items2);
           },
@@ -95,8 +113,32 @@ function App() {
           });
     }
 
-    function modifyItem(id, description, done, responsable) {
-      var data = { "description": description, "done": done, "responsable": responsable };
+    function changeItemState(id, done) {
+        return fetch(API_LIST + `/${id}/done`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                "done": done,
+            })
+        })
+        .then(response => {
+            if (response.ok) {
+                return response;
+            } else {
+                throw new Error('Something went wrong ... markItemDone');
+            }
+        });
+    }
+
+    function modifyItem(id, description, done, assigned) {
+      var data = {
+          "description": description,
+          "done": done,
+          "assigned": assigned
+      };
+
       return fetch(API_LIST + "/" + id, {
         method: 'PUT',
         headers: {
@@ -170,8 +212,12 @@ function App() {
       // Estructura de datos con la descripción y los storypoints
       var data = { 
         description: newItem.item,      // Descripción del ítem
-        storypoints: newItem.storypoints,  // Puntos de historia
-        responsable: newItem.responsable
+        storyPoints: newItem.storypoints,  // Puntos de historia
+        assigned: newItem.responsable,
+        priority: newItem.priority,
+        estimated_Hours: parseInt(newItem.estimatedHours),
+        expiration_TS: new Date(newItem.expirationDate).toISOString(),
+        done: false,
       };
     
       fetch(API_LIST + "/add", {
@@ -181,66 +227,82 @@ function App() {
         },
         body: JSON.stringify(data),  // Enviar la descripción y los storypoints
       })
-      .then((response) => {
-        if (response.ok) {
-          return response;
-        } else {
-          throw new Error('Something went wrong ... addItem');
-        }
-      })
-      .then(
-        (result) => {
+      .then((result) => {
+          if (!result.ok) {
+              return;
+          }
+
           var id = result.headers.get('location');
-          // Incluir 'storypoints' en el nuevo ítem
           var newItemWithId = { 
             "id": id, 
             "description": newItem.item,  // Descripción
-            "storypoints": newItem.storypoints,  // Puntos de historia
-            "responsable": newItem.responsable
+            "storyPoints": newItem.storypoints,  // Puntos de historia
+            "assigned": newItem.responsable,
+            "priority": newItem.priority,
+            "done": newItem.done,
+            "estimated_Hours": newItem.estimatedHours,
+            "expiration_TS": newItem.expirationDate,
           };
           setItems([newItemWithId, ...items]);
-          setInserting(false);
-        },
-        (error) => {
-          setInserting(false);
-          setError(error);
         }
-      );
+      ).catch((e) => {
+        console.error(e);
+      }).finally(() => {
+        setInserting(false);
+      });
     }
     
-
     return (
-      <div className="App">
-        <h1>ChocoBot</h1>
+      <div className="App" style={{ padding: '60px' }}>
+        <h1>ChocoLabs</h1>
         <NewItem addItem={addItem} isInserting={isInserting}/>
 
         { error && <p>Error: {error.message}</p> }
-        { isLoading && <CircularProgress /> }
+        { isLoading && <CircularProgress style={{ marginTop: '10px' }} /> }
 
         { !isLoading &&
           <div id="maincontent">
             {/* Selector para filtrar tareas por desarrollador */}
-            <div>
-              <label htmlFor="developer-select">Filtrar por desarrollador:</label>
-              <select
-                id="developer-select"
-                value={selectedDeveloper}
-                onChange={(e) => setSelectedDeveloper(e.target.value)}
-              >
-                <option value="">Todos</option>
-                {uniqueDevelopers.map((developer, index) => (
-                  <option key={index} value={developer}>
-                    {developer}
-                  </option>
-                ))}
-              </select>
+            <div className="filters-section">
+              <div>
+                  <label htmlFor="developer-select">Filter by developer </label>
+                  <select
+                    id="developer-select"
+                    value={selectedDeveloper}
+                    onChange={(e) => setSelectedDeveloper(e.target.value)}
+                  >
+                    <option value="">All</option>
+                    {uniqueDevelopers.map((developer, index) => (
+                      <option key={index} value={developer}>
+                        {developer}
+                      </option>
+                    ))}
+                  </select>
+              </div>
+              <div>
+                  <label htmlFor="sprint-select">Filter by Sprint</label>
+                  <select
+                      name="sprint"
+                      id="sprint-select"
+                      value={selectedSprint}
+                      onChange={(e) => setSelectedSprint(e.target.value)}
+                  >
+                      <option value="">All</option>
+                      {sprints.map((date, index) => (
+                          <option key={index} value={date}>Sprint {index + 1}</option>
+                      ))}
+                  </select>
+              </div>
             </div>
             
             {/* Sección de Tareas pendientes */}
-            <h2>Tareas pendientes</h2>
+            <h2>Pending Tasks</h2>
             {items
-            .filter(item => !item.done && (selectedDeveloper === "" || item.responsable === selectedDeveloper))
-            .map(item => (
+            .filter(item => {
+                const matchesDeveloper = selectedDeveloper === "" || item.assigned === selectedDeveloper;
+                const matchesSprint = selectedSprint === "" || formatDate(item.expiration_TS) === selectedSprint;
+                return !item.done && matchesDeveloper && matchesSprint;
+            }).map(item => (
               <Accordion key={item.id}>
                 <AccordionSummary
                   expandIcon={<ExpandMoreIcon />}
@@ -260,18 +322,24 @@ function App() {
                 </AccordionSummary>
                 <AccordionDetails>
                   <Typography>
-                    Storypoints: {item.storypoints} {/* Mostrar los Storypoints */}
+                    Storypoints: {item.storyPoints} {/* Mostrar los Storypoints */}
                   </Typography>
                   <Typography>
-                    Responsable: {item.responsable}  {/* Mostrar el responsable */}
+                    Assigned to: {item.assigned}  {/* Mostrar el responsable */}
                   </Typography>
                   <Typography>
-                    Creado el: <Moment format="MMM Do hh:mm:ss">{item.createdAt}</Moment>
+                    Priority: {item.priority}
                   </Typography>
-                  <Button variant="contained" onClick={() => enableEdit(item)} size="small">
+                  <Typography>
+                    Estimated Hours: {item.estimated_Hours}
+                  </Typography>
+                    <Typography>
+                        Expiration Date: <Moment format="MMM Do hh:mm:ss">{new Date(item.expiration_TS)}</Moment>
+                    </Typography>
+                  <Button style={{ marginRight: "10px" }} variant="contained" onClick={() => enableEdit(item)} size="small">
                     Edit
                   </Button>
-                  <Button variant="contained" onClick={(event) => toggleDone(event, item.id, item.description, !item.done)} size="small">
+                  <Button variant="contained" onClick={(event) => toggleDone(event, item.id, !item.done)} size="small">
                     Done
                   </Button>
                 </AccordionDetails>
@@ -279,8 +347,12 @@ function App() {
             ))}
 
             {/* Sección de Tareas completadas */}
-            <h2>Tareas completadas</h2>
-            {items.filter(item => item.done).map(item => (
+            <h2 style={{ marginTop: "30px" }}>Completed Tasks</h2>
+            {items.filter(item => {
+                const matchesDeveloper = selectedDeveloper === "" || item.assigned === selectedDeveloper;
+                const matchesSprint = selectedSprint === "" || formatDate(item.expiration_TS) === selectedSprint;
+                return item.done && matchesDeveloper && matchesSprint;
+            }).map(item => (
               <Accordion key={item.id}>
                 <AccordionSummary
                   expandIcon={<ExpandMoreIcon />}
@@ -291,15 +363,21 @@ function App() {
                 </AccordionSummary>
                 <AccordionDetails>
                   <Typography>
-                    Storypoints: {item.storypoints} {/* Mostrar los Storypoints */}
+                    Storypoints: {item.storyPoints} {/* Mostrar los Storypoints */}
                   </Typography>
                   <Typography>
-                    Responsable: {item.responsable}  {/* Mostrar el responsable */}
+                    Assigned To: {item.assigned}  {/* Mostrar el responsable */}
                   </Typography>
                   <Typography>
-                    Completada el: <Moment format="MMM Do hh:mm:ss">{item.createdAt}</Moment>
+                    Priority: {item.priority}
                   </Typography>
-                  <Button variant="contained" onClick={(event) => toggleDone(event, item.id, item.description, !item.done)} size="small">
+                  <Typography>
+                    Estimated Hours: {item.estimated_Hours}
+                  </Typography>
+                  <Typography>
+                    Completed at: <Moment format="MMM Do hh:mm:ss">{new Date(item.finished_TS)}</Moment>
+                  </Typography>
+                  <Button style={{ marginRight: "10px" }} variant="contained" onClick={(event) => toggleDone(event, item.id, !item.done)} size="small">
                     Undo
                   </Button>
                   <Button startIcon={<DeleteIcon />} variant="contained" onClick={() => deleteItem(item.id)} size="small">
@@ -308,21 +386,8 @@ function App() {
                 </AccordionDetails>
               </Accordion>
             ))}
-            <h2>Estadisticas</h2>
-            <Accordion className="customAccordion">
-              <AccordionSummary
-                expandIcon={<ExpandMoreIcon />}
-                aria-controls="panel1bh-content"
-                id="panel1bh-header"
-              >
-                <Typography>Estadisticas</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                
-                <Estadisticas />
-              </AccordionDetails>
-            </Accordion>
-            
+            <h2 style={{ marginTop: "30px" }}>Project Statistics</h2>
+            <Estadisticas tasks={items} />
           </div>
         }
       </div>
