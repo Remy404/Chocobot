@@ -43,6 +43,9 @@ public class ToDoItem {
     @Column(name = "EXPIRATION_TS")
     OffsetDateTime expiration_ts;
 
+    @Column(name = "FINISHED_TS")
+    OffsetDateTime finished_ts;
+
     public ToDoItem(int ID, String description, OffsetDateTime creation_ts, Boolean done, Integer storyPoints, String priority, String assigned, Integer estimated_hours, OffsetDateTime expiration_ts, String estado) {
         this.ID = ID;
         this.description = description;
@@ -87,9 +90,6 @@ public class ToDoItem {
         return done;
     }
 
-    public void setDone(Boolean done) {
-        this.done = done;
-    }
 
     public String getEstado() {
         return estado;
@@ -137,6 +137,20 @@ public class ToDoItem {
 
     public void setExpiration_TS(OffsetDateTime expiration_ts) {
         this.expiration_ts = expiration_ts;
+    }
+
+    public OffsetDateTime getFinished_TS() { return finished_ts; }
+
+    public void setFinished_TS(OffsetDateTime finished_ts) { this.finished_ts = finished_ts; }
+
+    public void setDone(Boolean done) {
+        if (done) {
+            this.finished_ts = OffsetDateTime.now();
+        } else {
+            this.finished_ts = null;
+        }
+
+        this.done = done;
     }
 
     @Override

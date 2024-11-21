@@ -6,8 +6,11 @@ EXPOSE 8080
 COPY target/MyTodoList-0.0.1-SNAPSHOT.jar MyTodoList.jar
 RUN mkdir -p /mtdrworkshop/creds
 COPY /Wallet_reacttodo10lise /mtdrworkshop/creds
+RUN mkdir -p /mtdrworkshop/creds
+COPY /Wallet_reacttodo10lise /mtdrworkshop/creds
 ENV db_user="TODOUSER"
 #ENV ui_username="admin"
+#ENV ui_password="none0001"
 #ENV ui_password="none0001"
 ENV dbpassword="Chocolabs2024"
 ENV db_url="jdbc:oracle:thin:@reacttodo10lise_tp?TNS_ADMIN=/mtdrworkshop/creds"
