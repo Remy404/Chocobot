@@ -9,7 +9,7 @@
  * @author  jean.de.lavarene@oracle.com
  */
 
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import Button from '@mui/material/Button';
 
 function NewItem(props) {
@@ -25,12 +25,13 @@ function NewItem(props) {
   function handleSubmit(e) {
     e.preventDefault();
 
-    if (!storypoints.trim() || !responsable.trim() || !priority.trim() || !estimatedHours.trim() || !expirationDate.trim()) { // Validar ambos campos
+    if (!item.trim() || !storypoints.trim() || !responsable.trim() || !priority.trim() || !estimatedHours.trim() || !expirationDate.trim()) { // Validar ambos campos
       return;
     }
     // addItem ahora recibe un objeto con 'item' y 'storypoints'
     props.addItem({ item, storypoints, responsable, priority, estimatedHours, expirationDate });
 
+    setItem('')
     setResponsable('');
     setStorypoints('');
     setPriority('');
@@ -75,11 +76,6 @@ function NewItem(props) {
               autoComplete="off"
               value={item}
               onChange={handleItemChange}
-              onKeyDown={event => {
-                if (event.key === 'Enter') {
-                  handleSubmit(event);
-                }
-              }}
             />
           </div>
           <div>

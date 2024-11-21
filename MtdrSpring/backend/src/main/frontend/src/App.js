@@ -241,7 +241,7 @@ function App() {
             "priority": newItem.priority,
             "done": newItem.done,
             "estimated_Hours": newItem.estimatedHours,
-            "expiration_ts": new Date(newItem.expirationDate),
+            "expiration_TS": newItem.expirationDate,
           };
           setItems([newItemWithId, ...items]);
         }

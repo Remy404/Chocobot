@@ -191,3 +191,9 @@ button.DoneButton:hover {
   border: 0;
   border-radius: 5px;
 }
+
+.graphs-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
