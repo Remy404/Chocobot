@@ -251,7 +251,7 @@ function App() {
             "priority": newItem.priority,
             "done": newItem.done,
             "estimated_Hours": newItem.estimatedHours,
-            "expiration_ts": new Date(newItem.expirationDate),
+            "expiration_TS": newItem.expirationDate,
           };
           setItems([newItemWithId, ...items]);
         }
@@ -418,7 +418,7 @@ function App() {
           </AccordionSummary>
           <AccordionDetails>
             {/* Aquí puedes incluir el componente de estadísticas o los datos que desees mostrar */}
-            <Estadisticas />
+            <Estadisticas tasks={items} />
           </AccordionDetails>
         </Accordion>
         
