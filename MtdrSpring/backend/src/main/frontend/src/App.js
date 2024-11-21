@@ -110,6 +110,7 @@ function App() {
                 'priority': result.priority,
                 'estimated_Hours': result.estimated_Hours,
                 'finished_TS': result.finished_TS,
+                'expiration_TS': result.expiration_TS
               } : x));
             setItems(items2);
           },
@@ -137,14 +138,15 @@ function App() {
         });
     }
 
-    function modifyItem(id, description, done, storyPoints, assigned, priority, estimated_Hours) {
+    function modifyItem(id, description, done, storyPoints, assigned, priority, estimated_Hours, expiration_TS) {
       var data = {
           "description": description,
           "done": done,
           "storyPoints": parseInt(storyPoints),
           "assigned": assigned,
           "priority": priority,
-          "estimated_Hours": estimated_Hours
+          "estimated_Hours": parseInt(estimated_Hours),
+          "expiration_TS": new Date(expiration_TS).toISOString()
       };
 
       return fetch(API_LIST + "/" + id, {
@@ -176,7 +178,9 @@ function App() {
         updatedItem.storypoints, 
         updatedItem.assigned,
         updatedItem.priority,
-        updatedItem.estimated_Hours
+        updatedItem.estimated_Hours,
+        updatedItem.expiration_TS,
+        updatedItem.expirationDate
       )
       .then(() => {
         // Reload items after successful update
@@ -440,6 +444,8 @@ function App() {
               storypoints={editingItem.storyPoints}
               assigned={editingItem.assigned}
               priority={editingItem.priority}
+              estimatedHours={editingItem.estimated_Hours}
+              expirationTS={editingItem.expiration_TS}
               updateItem={handleUpdateItem}
               onClose={() => setIsEditModalOpen(false)}
             />

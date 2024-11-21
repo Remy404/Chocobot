@@ -13,6 +13,9 @@ function EditItem(props) {
     const [newAssigned, setNewAssigned] = useState(props.assigned);
     const [newPriority, setNewPriority] = useState(props.priority);
     const [newEstimated_Hours, setNewEstimated_Hours] = useState(props.priority);
+    const [newExpirationTS, setNewExpirationTS] = useState(
+        props.expirationTS ? new Date(props.expirationTS).toISOString().split('T')[0] : ''
+    );
 
 
     const handleEdit = (e) => {
@@ -42,13 +45,20 @@ function EditItem(props) {
             alert("Estimated hours must be a numeric value");
             return;
         }
+
+        if (!newExpirationTS) {
+            alert("Expiration date can't be empty");
+            return;
+        }
+    
     
         props.updateItem(props.id, {
             description: newDescription.trim(),
             storypoints: Number(newStorypoints),
             assigned: newAssigned.trim(),
             priority: newPriority.trim(),
-            estimated_Hours: Number(newEstimated_Hours)
+            estimated_Hours: Number(newEstimated_Hours),
+            expiration_TS: new Date(newExpirationTS).toISOString()
         });
     
         props.onClose();
@@ -112,6 +122,18 @@ function EditItem(props) {
                     value={newEstimated_Hours}
                     onChange={(e) => setNewEstimated_Hours(e.target.value)}
                     fullWidth
+                />
+
+                <TextField
+                    label="Expiration Date"
+                    type="date"
+                    variant="outlined"
+                    value={newExpirationTS}
+                    onChange={(e) => setNewExpirationTS(e.target.value)}
+                    fullWidth
+                    InputLabelProps={{
+                        shrink: true,
+                    }}
                 />
 
                 <Button type="submit" variant="contained">Guardar</Button>
