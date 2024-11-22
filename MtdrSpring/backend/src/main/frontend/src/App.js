@@ -91,7 +91,10 @@ function App() {
     function toggleDone(event, id, done) {
       event.preventDefault();
 
-      changeItemState(id, done);
+      changeItemState(id, done).then(
+        () => { reloadOneItem(id); },
+        (error) => { setError(error); }
+    );
     }
 
     function reloadOneItem(id) {
