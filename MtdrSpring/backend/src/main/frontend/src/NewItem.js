@@ -112,14 +112,19 @@ function NewItem(props) {
         </div>
         <div className="newItemFormSection">          
           <div>
-            <label htmlFor="newresponsableinput">Responsable</label>
-            <input
-              id="newresponsableinput"
-              placeholder="Responsable"
-              type="text"
-              value={responsable}
-              onChange={handleResponsableChange}
-            />
+          <label htmlFor="newresponsableinput">Assigned</label>
+          <select
+            id="newresponsableinput"
+            value={responsable}
+            onChange={handleResponsableChange}
+          >
+            <option value="" disabled>Select a Developer</option>
+            <option value="Francisco">Francisco</option>
+            <option value="Alejandro">Alejandro</option>
+            <option value="Saúl">Saul</option>
+            <option value="Facundo">Facundo</option>
+          </select>
+
           </div>
           <div>
             <label htmlFor="expirationdate">Expiration date</label> 

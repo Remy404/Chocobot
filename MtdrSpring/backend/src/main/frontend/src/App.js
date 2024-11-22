@@ -13,9 +13,10 @@
 
 import React, { useState, useEffect } from 'react';
 import NewItem from './NewItem';
+import EditItem from './EditItem';
 import API_LIST from './API';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Button, CircularProgress, Accordion, AccordionSummary, AccordionDetails, Typography } from '@mui/material';
+import { Button, Dialog, DialogContent, CircularProgress, Accordion, AccordionSummary, AccordionDetails, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Moment from 'react-moment';
 import Estadisticas from './components/Estadisticas';
@@ -29,11 +30,13 @@ import Estadisticas from './components/Estadisticas';
 
 function App() {
     const [isLoading, setLoading] = useState(false);
+    
     const [isInserting, setInserting] = useState(false);
     const [items, setItems] = useState([]);
     const [error, setError] = useState();
-    const [editItemId, setEditItemId] = useState(null);
-    const [editItemText, setEditItemText] = useState('');
+    const [editingItem, setEditingItem] = useState(null);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
 
     // Extraer todos los responsables únicos de la lista de items
     const [selectedDeveloper, setSelectedDeveloper] = useState(''); // Estado para almacenar el desarrollador seleccionado
@@ -108,7 +111,10 @@ function App() {
                 'description': result.description,
                 'done': result.done,
                 'assigned': result.assigned,
+                'priority': result.priority,
+                'estimated_Hours': result.estimated_Hours,
                 'finished_TS': result.finished_TS,
+                'expiration_TS': result.expiration_TS
               } : x));
             setItems(sortItemsByExpirationDate(items2));
           },
@@ -141,11 +147,34 @@ function App() {
         });
     }
 
-    function modifyItem(id, description, done, assigned) {
+    function changeItemState(id, done) {
+        return fetch(API_LIST + `/${id}/done`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                "done": done,
+            })
+        })
+        .then(response => {
+            if (response.ok) {
+                return response;
+            } else {
+                throw new Error('Something went wrong ... markItemDone');
+            }
+        });
+    }
+
+    function modifyItem(id, description, done, storyPoints, assigned, priority, estimated_Hours, expiration_TS) {
       var data = {
           "description": description,
           "done": done,
-          "assigned": assigned
+          "storyPoints": parseInt(storyPoints),
+          "assigned": assigned,
+          "priority": priority,
+          "estimated_Hours": parseInt(estimated_Hours),
+          "expiration_TS": new Date(expiration_TS).toISOString()
       };
 
       return fetch(API_LIST + "/" + id, {
@@ -164,29 +193,33 @@ function App() {
       });
     }
 
-    function enableEdit(item) {
-      setEditItemId(item.id);
-      setEditItemText(item.description);
-    }
+    const enableEdit = (item) => {
+      setEditingItem(item);
+      setIsEditModalOpen(true);
+    };
 
-    function saveEdit() {
-      if (editItemId) {
-        modifyItem(editItemId, editItemText, false).then(() => {
-          setEditItemId(null);
-          setEditItemText('');
-          reloadOneItem(editItemId);
-        }).catch(error => {
-          setError(error);
-        });
-      }
-    }
-
-    function handleKeyDown(event) {
-      if (event.key === 'Enter') {
-        saveEdit();
-      }
-    }
-
+    const handleUpdateItem = (id, updatedItem) => {
+      modifyItem(
+        id, 
+        updatedItem.description, 
+        false,  // assuming 'done' status remains unchanged 
+        updatedItem.storypoints, 
+        updatedItem.assigned,
+        updatedItem.priority,
+        updatedItem.estimated_Hours,
+        updatedItem.expiration_TS,
+        updatedItem.expirationDate
+      )
+      .then(() => {
+        // Reload items after successful update
+        fetchItems(); // Make sure you have this method to refresh items
+        setIsEditModalOpen(false);
+      })
+      .catch(error => {
+        console.error("Error updating item:", error);
+        setError(error);
+      });
+    };
     /*
     To simulate slow network, call sleep before making API calls.
     const sleep = (milliseconds) => {
@@ -252,6 +285,25 @@ function App() {
         setInserting(false);
       });
     }
+
+    const fetchItems = () => {
+      setLoading(true);
+      fetch(API_LIST)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then(data => {
+          setItems(data);
+          setLoading(false);
+        })
+        .catch(error => {
+          setError(error);
+          setLoading(false);
+        });
+    };
     
     return (
       <div className="App" style={{ padding: '60px' }}>
@@ -310,16 +362,7 @@ function App() {
                   aria-controls={`panel${item.id}-content`}
                   id={`panel${item.id}-header`}
                 >
-                  <Typography>{editItemId === item.id ? (
-                    <input
-                      type="text"
-                      value={editItemText}
-                      onChange={(e) => setEditItemText(e.target.value)}
-                      onKeyDown={handleKeyDown}
-                    />
-                  ) : (
-                    item.description
-                  )}</Typography>
+                  <Typography>{item.description}</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
                   <Typography>
@@ -387,10 +430,48 @@ function App() {
                 </AccordionDetails>
               </Accordion>
             ))}
-            <h2 style={{ marginTop: "30px" }}>Project Statistics</h2>
+             {/* Sección de Estadísticas */}
+        <h2 style={{ marginTop: "30px" }}>Statistics</h2>
+        <Accordion>
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            aria-controls="statistics-content"
+            id="statistics-header"
+          >
+            <Typography>View Statistics</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            {/* Aquí puedes incluir el componente de estadísticas o los datos que desees mostrar */}
             <Estadisticas tasks={items} />
+          </AccordionDetails>
+        </Accordion>
+        
+
           </div>
         }
+
+<Dialog 
+        open={isEditModalOpen} 
+        onClose={() => setIsEditModalOpen(false)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogContent>
+          {editingItem && (
+            <EditItem
+              id={editingItem.id}
+              description={editingItem.description}
+              storypoints={editingItem.storyPoints}
+              assigned={editingItem.assigned}
+              priority={editingItem.priority}
+              estimatedHours={editingItem.estimated_Hours}
+              expirationTS={editingItem.expiration_TS}
+              updateItem={handleUpdateItem}
+              onClose={() => setIsEditModalOpen(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
       </div>
     );
 }
