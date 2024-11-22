@@ -76,11 +76,6 @@ function NewItem(props) {
               autoComplete="off"
               value={item}
               onChange={handleItemChange}
-              onKeyDown={event => {
-                if (event.key === 'Enter') {
-                  handleSubmit(event);
-                }
-              }}
             />
           </div>
           <div>
@@ -117,16 +112,16 @@ function NewItem(props) {
         </div>
         <div className="newItemFormSection">          
           <div>
-          <label htmlFor="newresponsableinput">Responsable</label>
+          <label htmlFor="newresponsableinput">Assigned</label>
           <select
             id="newresponsableinput"
             value={responsable}
             onChange={handleResponsableChange}
           >
-            <option value="" disabled>Select a responsible</option>
+            <option value="" disabled>Select a Developer</option>
             <option value="Francisco">Francisco</option>
             <option value="Alejandro">Alejandro</option>
-            <option value="Saul">Saul</option>
+            <option value="Saúl">Saul</option>
             <option value="Facundo">Facundo</option>
           </select>
 
