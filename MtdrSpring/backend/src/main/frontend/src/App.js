@@ -45,13 +45,6 @@ function App() {
     const [selectedSprint, setSelectedSprint] = useState('');
     const sprints = [...new Set(items.map(item => formatDate(item.expiration_TS)))];
 
-    function sortItemsByExpirationDate(items) {
-        // ordenar los items por su fecha de expiración
-        items.sort((a, b) => new Date(a.expiration_TS).getTime() - new Date(b.expiration_TS).getTime());
-
-        return items;
-    }
-
     function deleteItem(deleteId) {
       fetch(API_LIST + "/" + deleteId, {
         method: 'DELETE',
@@ -66,7 +59,7 @@ function App() {
       .then(
         () => {
           const remainingItems = items.filter(item => item.id !== deleteId);
-          setItems(sortItemsByExpirationDate(remainingItems));
+          setItems(remainingItems);
         },
         (error) => {
           setError(error);
@@ -91,7 +84,10 @@ function App() {
     function toggleDone(event, id, done) {
       event.preventDefault();
 
-      changeItemState(id, done);
+      changeItemState(id, done).then(
+          () => { reloadOneItem(id); },
+          (error) => { setError(error); }
+      );
     }
 
     function reloadOneItem(id) {
@@ -116,35 +112,11 @@ function App() {
                 'finished_TS': result.finished_TS,
                 'expiration_TS': result.expiration_TS
               } : x));
-            setItems(sortItemsByExpirationDate(items2));
+            setItems(items2);
           },
           (error) => {
             setError(error);
           });
-    }
-
-    function changeItemState(id, done) {
-        fetch(API_LIST + `/${id}/done`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                "done": done,
-            })
-        })
-        .then((response) => {
-            if (response.ok) {
-                return response.json();
-            }
-            throw new Error('Something went wrong ...reloadOneItem');
-        })
-        .then(result => {
-            const newItems = items.map(item => (item.id === id ? result : item ));
-            setItems(sortItemsByExpirationDate(newItems));
-        }).catch((e) => {
-            setError(e);
-        });
     }
 
     function changeItemState(id, done) {
@@ -240,7 +212,7 @@ function App() {
         .then(
           (result) => {
             setLoading(false);
-            setItems(sortItemsByExpirationDate(result));
+            setItems(result);
           },
           (error) => {
             setLoading(false);
@@ -259,7 +231,6 @@ function App() {
         priority: newItem.priority,
         estimated_Hours: parseInt(newItem.estimatedHours),
         expiration_TS: new Date(newItem.expirationDate).toISOString(),
-        creation_ts: new Date().toISOString(),
         done: false,
       };
     
@@ -269,12 +240,6 @@ function App() {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(data),  // Enviar la descripción y los storypoints
-      })
-      .then((response) => {
-          if (response.ok) {
-              return response.json();
-          }
-          throw new Error('Something went wrong ... addItem');
       })
       .then((result) => {
           if (!result.ok) {
