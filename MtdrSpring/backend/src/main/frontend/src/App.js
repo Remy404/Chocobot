@@ -90,85 +90,33 @@ function App() {
 
     function toggleDone(event, id, done) {
       event.preventDefault();
-
-      changeItemState(id, done).then(
-        () => { reloadOneItem(id); },
-        (error) => { setError(error); }
-    );
+      changeItemState(id, done);
     }
 
-    function reloadOneItem(id) {
-      fetch(API_LIST + "/" + id)
-        .then(response => {
-          if (response.ok) {
-            return response.json();
-          } else {
-            throw new Error('Something went wrong ...reloadOneItem');
-          }
-        })
-        .then(
-          (result) => {
-            const items2 = items.map(
-              x => (x.id === id ? {
-                ...x,
-                'description': result.description,
-                'done': result.done,
-                'assigned': result.assigned,
-                'priority': result.priority,
-                'estimated_Hours': result.estimated_Hours,
-                'finished_TS': result.finished_TS,
-                'expiration_TS': result.expiration_TS
-              } : x));
-            setItems(sortItemsByExpirationDate(items2));
+    function changeItemState(id, done)  {
+      fetch(API_LIST + /${id}/done, {
+          method: 'PUT',
+          headers: {
+              'Content-Type': 'application/json'
           },
-          (error) => {
-            setError(error);
-          });
+          body: JSON.stringify({
+              "done": done,
+          })
+      })
+      .then((response) => {
+          if (response.ok) {
+              return response.json();
+          }
+          throw new Error('Something went wrong ...reloadOneItem');
+      })
+      .then(result => {
+          const newItems = items.map(item => (item.id === id ? result : item ));
+          setItems(sortItemsByExpirationDate(newItems));
+      }).catch((e) => {
+          setError(e);
+      });
     }
-
-    function changeItemState(id, done) {
-        fetch(API_LIST + `/${id}/done`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                "done": done,
-            })
-        })
-        .then((response) => {
-            if (response.ok) {
-                return response.json();
-            }
-            throw new Error('Something went wrong ...reloadOneItem');
-        })
-        .then(result => {
-            const newItems = items.map(item => (item.id === id ? result : item ));
-            setItems(sortItemsByExpirationDate(newItems));
-        }).catch((e) => {
-            setError(e);
-        });
-    }
-
-    function changeItemState(id, done) {
-        return fetch(API_LIST + `/${id}/done`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                "done": done,
-            })
-        })
-        .then(response => {
-            if (response.ok) {
-                return response;
-            } else {
-                throw new Error('Something went wrong ... markItemDone');
-            }
-        });
-    }
-
+  
     function modifyItem(id, description, done, storyPoints, assigned, priority, estimated_Hours, expiration_TS) {
       var data = {
           "description": description,
