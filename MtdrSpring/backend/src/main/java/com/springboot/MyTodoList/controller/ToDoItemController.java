@@ -12,6 +12,7 @@ import com.springboot.MyTodoList.repository.ToDoItemRepository;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 public class ToDoItemController {
@@ -97,6 +98,27 @@ public class ToDoItemController {
         }
     } catch (Exception e) {
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PutMapping(value = "/todolist/{id}/done")
+    public ResponseEntity<ToDoItem> updateToDoItemDoneStatus(@PathVariable int id, @RequestBody Map<String, Boolean> request) {
+        try {
+            if (!request.containsKey("done")) {
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
+
+            boolean isDone = request.get("done");
+            ToDoItem updatedItem = toDoItemService.updateDoneStatus(id, isDone);
+
+            if (updatedItem != null) {
+                return new ResponseEntity<>(updatedItem, HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            logger.error("Error updating 'done' status for ToDoItem with id " + id, e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

@@ -138,6 +138,25 @@ function App() {
         });
     }
 
+    function changeItemState(id, done) {
+        return fetch(API_LIST + `/${id}/done`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                "done": done,
+            })
+        })
+        .then(response => {
+            if (response.ok) {
+                return response;
+            } else {
+                throw new Error('Something went wrong ... markItemDone');
+            }
+        });
+    }
+
     function modifyItem(id, description, done, storyPoints, assigned, priority, estimated_Hours, expiration_TS) {
       var data = {
           "description": description,
