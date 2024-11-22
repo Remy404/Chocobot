@@ -121,7 +121,7 @@ function NewItem(props) {
             <option value="" disabled>Select a Developer</option>
             <option value="Francisco">Francisco</option>
             <option value="Alejandro">Alejandro</option>
-            <option value="Saúl">Saul</option>
+            <option value="Saúl">Saúl</option>
             <option value="Facundo">Facundo</option>
           </select>
 

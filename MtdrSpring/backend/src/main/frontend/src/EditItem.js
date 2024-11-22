@@ -95,7 +95,7 @@ function EditItem(props) {
                         label="Assigned To"
                     >
                         <MenuItem value="Francisco">Francisco</MenuItem>
-                        <MenuItem value="Saul">Saul</MenuItem>
+                        <MenuItem value="Saúl">Saúl</MenuItem>
                         <MenuItem value="Facundo">Facundo</MenuItem>
                         <MenuItem value="Alejandro">Alejandro</MenuItem>
                     </Select>

@@ -430,23 +430,9 @@ function App() {
                 </AccordionDetails>
               </Accordion>
             ))}
-             {/* Sección de Estadísticas */}
-        <h2 style={{ marginTop: "30px" }}>Statistics</h2>
-        <Accordion>
-          <AccordionSummary
-            expandIcon={<ExpandMoreIcon />}
-            aria-controls="statistics-content"
-            id="statistics-header"
-          >
-            <Typography>View Statistics</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            {/* Aquí puedes incluir el componente de estadísticas o los datos que desees mostrar */}
+            {/* Sección de Estadísticas */}
+            <h2 style={{ marginTop: "30px" }}>Statistics</h2>
             <Estadisticas tasks={items} />
-          </AccordionDetails>
-        </Accordion>
-        
-
           </div>
         }
 
