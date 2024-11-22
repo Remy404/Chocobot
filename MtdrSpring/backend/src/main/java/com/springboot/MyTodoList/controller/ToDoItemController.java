@@ -45,14 +45,8 @@ public class ToDoItemController {
         try {
             ToDoItem td = toDoItemService.addToDoItem(todoItem);
             logger.info("addToDoItem 1");
-
-            HttpHeaders responseHeaders = new HttpHeaders();
-
-            responseHeaders.set("location", "" + td.getID());
-            responseHeaders.set("Access-Control-Expose-Headers", "location");
             
-            return ResponseEntity.ok()
-                    .headers(responseHeaders).build();
+            return new ResponseEntity<>(td, HttpStatus.OK);
         } catch (IllegalArgumentException e) {
             // Capturar estado inválido
             return new ResponseEntity<>("Estado inválido: " + e.getMessage(), HttpStatus.BAD_REQUEST);

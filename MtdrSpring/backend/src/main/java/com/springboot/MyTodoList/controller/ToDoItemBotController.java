@@ -358,8 +358,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 
 						for (ToDoItem activeItem : activeItems) {
 							KeyboardRow currentRow = new KeyboardRow();
-							currentRow.add(activeItem.getDescription() + " " + BotLabels.DASH.getLabel() + " "
-									+ activeItem.getAssigned());
+							currentRow.add(activeItem.getDescription());
 							currentRow.add(activeItem.getID() + BotLabels.DASH.getLabel() + BotLabels.DONE.getLabel());
 							currentRow.add(activeItem.getID() + BotLabels.DASH.getLabel() + BotLabels.EDIT.getLabel());
 							rows.add(currentRow);
@@ -409,7 +408,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 
 				for (ToDoItem item : activeItems) {
 					KeyboardRow currentRow = new KeyboardRow();
-					currentRow.add(item.getDescription() + " " + BotLabels.DASH.getLabel() + " " + item.getAssigned());
+					currentRow.add(item.getDescription());
 					currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.DONE.getLabel());
 					currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.EDIT.getLabel());
 					keyboard.add(currentRow);
@@ -420,9 +419,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 
 				for (ToDoItem item : doneItems) {
 					KeyboardRow currentRow = new KeyboardRow();
-					currentRow.add(item.getDescription() + " " + BotLabels.DASH.getLabel() + " " + item.getAssigned());
-					// currentRow.add(item.getDescription() == null ? "No desc" :
-					// item.getDescription());
+					currentRow.add(item.getDescription());
 					currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.UNDO.getLabel());
 					currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.DELETE.getLabel());
 					keyboard.add(currentRow);

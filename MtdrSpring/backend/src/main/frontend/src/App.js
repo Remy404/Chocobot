@@ -42,6 +42,13 @@ function App() {
     const [selectedSprint, setSelectedSprint] = useState('');
     const sprints = [...new Set(items.map(item => formatDate(item.expiration_TS)))];
 
+    function sortItemsByExpirationDate(items) {
+        // ordenar los items por su fecha de expiración
+        items.sort((a, b) => new Date(a.expiration_TS).getTime() - new Date(b.expiration_TS).getTime());
+
+        return items;
+    }
+
     function deleteItem(deleteId) {
       fetch(API_LIST + "/" + deleteId, {
         method: 'DELETE',
@@ -56,7 +63,7 @@ function App() {
       .then(
         () => {
           const remainingItems = items.filter(item => item.id !== deleteId);
-          setItems(remainingItems);
+          setItems(sortItemsByExpirationDate(remainingItems));
         },
         (error) => {
           setError(error);
@@ -81,10 +88,7 @@ function App() {
     function toggleDone(event, id, done) {
       event.preventDefault();
 
-      changeItemState(id, done).then(
-          () => { reloadOneItem(id); },
-          (error) => { setError(error); }
-      );
+      changeItemState(id, done);
     }
 
     function reloadOneItem(id) {
@@ -106,7 +110,7 @@ function App() {
                 'assigned': result.assigned,
                 'finished_TS': result.finished_TS,
               } : x));
-            setItems(items2);
+            setItems(sortItemsByExpirationDate(items2));
           },
           (error) => {
             setError(error);
@@ -114,7 +118,7 @@ function App() {
     }
 
     function changeItemState(id, done) {
-        return fetch(API_LIST + `/${id}/done`, {
+        fetch(API_LIST + `/${id}/done`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
@@ -123,12 +127,17 @@ function App() {
                 "done": done,
             })
         })
-        .then(response => {
+        .then((response) => {
             if (response.ok) {
-                return response;
-            } else {
-                throw new Error('Something went wrong ... markItemDone');
+                return response.json();
             }
+            throw new Error('Something went wrong ...reloadOneItem');
+        })
+        .then(result => {
+            const newItems = items.map(item => (item.id === id ? result : item ));
+            setItems(sortItemsByExpirationDate(newItems));
+        }).catch((e) => {
+            setError(e);
         });
     }
 
@@ -198,7 +207,7 @@ function App() {
         .then(
           (result) => {
             setLoading(false);
-            setItems(result);
+            setItems(sortItemsByExpirationDate(result));
           },
           (error) => {
             setLoading(false);
@@ -217,6 +226,7 @@ function App() {
         priority: newItem.priority,
         estimated_Hours: parseInt(newItem.estimatedHours),
         expiration_TS: new Date(newItem.expirationDate).toISOString(),
+        creation_ts: new Date().toISOString(),
         done: false,
       };
     
@@ -227,23 +237,14 @@ function App() {
         },
         body: JSON.stringify(data),  // Enviar la descripción y los storypoints
       })
-      .then((result) => {
-          if (!result.ok) {
-              return;
+      .then((response) => {
+          if (response.ok) {
+              return response.json();
           }
-
-          var id = result.headers.get('location');
-          var newItemWithId = { 
-            "id": id, 
-            "description": newItem.item,  // Descripción
-            "storyPoints": newItem.storypoints,  // Puntos de historia
-            "assigned": newItem.responsable,
-            "priority": newItem.priority,
-            "done": newItem.done,
-            "estimated_Hours": newItem.estimatedHours,
-            "expiration_TS": newItem.expirationDate,
-          };
-          setItems([newItemWithId, ...items]);
+          throw new Error('Something went wrong ... addItem');
+      })
+      .then((result) => {
+          setItems(sortItemsByExpirationDate([result, ...items]));
         }
       ).catch((e) => {
         console.error(e);
