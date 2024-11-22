@@ -94,7 +94,7 @@ function App() {
     }
 
     function changeItemState(id, done)  {
-      fetch(API_LIST + /${id}/done, {
+      fetch(API_LIST +`/${id}/done`, {
           method: 'PUT',
           headers: {
               'Content-Type': 'application/json'
