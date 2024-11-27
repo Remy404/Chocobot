@@ -14,7 +14,7 @@
 import React, { useState, useEffect } from 'react';
 import NewItem from './NewItem';
 import EditItem from './EditItem';
-import API_LIST from './API';
+import {API_LIST} from './API';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Button, Dialog, DialogContent, CircularProgress, Accordion, AccordionSummary, AccordionDetails, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';

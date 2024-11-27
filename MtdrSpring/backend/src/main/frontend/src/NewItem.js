@@ -1,37 +1,37 @@
-/*
-## MyToDoReact version 1.0.
-##
-## Copyright (c) 2022 Oracle, Inc.
-## Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl/
-*/
-/*
- * Component that supports creating a new todo item.
- * @author  jean.de.lavarene@oracle.com
- */
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Button from '@mui/material/Button';
+import { API_USERS } from './API';
 
 function NewItem(props) {
-  // Se agregan dos estados: uno para 'item' y otro para 'storypoints'
   const [item, setItem] = useState('');
-  const [storypoints, setStorypoints] = useState(); // Nuevo estado para storypoints
+  const [storypoints, setStorypoints] = useState();
   const [responsable, setResponsable] = useState('');
   const [priority, setPriority] = useState('');
   const [estimatedHours, setEstimatedHours] = useState();
   const [expirationDate, setExpirationDate] = useState();
+  const [developers, setDevelopers] = useState([]);
 
-  // Modificamos el handleSubmit para manejar tanto item como storypoints
+  useEffect(() => {
+    // Hacer la solicitud HTTP usando el nuevo endpoint API_USERS
+    fetch(API_USERS)
+      .then((response) => response.json()) // Asegúrate de parsear la respuesta a JSON
+      .then((data) => {
+        setDevelopers(data); // Suponiendo que la respuesta es un array de desarrolladores
+      })
+      .catch((error) => {
+        console.error("Error fetching developers:", error);
+      });
+  }, []);
+
   function handleSubmit(e) {
     e.preventDefault();
 
-    if (!item.trim() || !storypoints.trim() || !responsable.trim() || !priority.trim() || !estimatedHours.trim() || !expirationDate.trim()) { // Validar ambos campos
+    if (!item.trim() || !storypoints.trim() || !responsable.trim() || !priority.trim() || !estimatedHours.trim() || !expirationDate.trim()) {
       return;
     }
-    // addItem ahora recibe un objeto con 'item' y 'storypoints'
     props.addItem({ item, storypoints, responsable, priority, estimatedHours, expirationDate });
 
-    setItem('')
+    setItem('');
     setResponsable('');
     setStorypoints('');
     setPriority('');
@@ -47,7 +47,7 @@ function NewItem(props) {
     setStorypoints(e.target.value);
   }
 
-  function handleResponsableChange(e){
+  function handleResponsableChange(e) {
     setResponsable(e.target.value);
   }
 
@@ -60,7 +60,7 @@ function NewItem(props) {
   }
 
   function handleExpirationDateChange(e) {
-    setExpirationDate(e.target.value)
+    setExpirationDate(e.target.value);
   }
 
   return (
@@ -110,24 +110,28 @@ function NewItem(props) {
             />
           </div>
         </div>
-        <div className="newItemFormSection">          
+        <div className="newItemFormSection">
           <div>
-          <label htmlFor="newresponsableinput">Assigned</label>
-          <select
-            id="newresponsableinput"
-            value={responsable}
-            onChange={handleResponsableChange}
-          >
-            <option value="" disabled>Select a Developer</option>
-            <option value="Francisco">Francisco</option>
-            <option value="Alejandro">Alejandro</option>
-            <option value="Saúl">Saul</option>
-            <option value="Facundo">Facundo</option>
-          </select>
-
+            <label htmlFor="newresponsableinput">Assigned</label>
+            <select
+              id="newresponsableinput"
+              value={responsable}
+              onChange={handleResponsableChange}
+            >
+              <option value="" disabled>Select a Developer</option>
+              {developers.length > 0 ? (
+                developers.map((developer) => (
+                  <option key={developer.id} value={developer.name}>
+                    {developer.name}
+                  </option>
+                ))
+              ) : (
+                <option disabled>No developers available</option>
+              )}
+            </select>
           </div>
           <div>
-            <label htmlFor="expirationdate">Expiration date</label> 
+            <label htmlFor="expirationdate">Expiration date</label>
             <input
               id="expirationdate"
               placeholder="Expiration date"
@@ -135,7 +139,7 @@ function NewItem(props) {
               value={expirationDate}
               onChange={handleExpirationDateChange}
             />
-          </div>    
+          </div>
         </div>
         <Button
           className="AddButton"

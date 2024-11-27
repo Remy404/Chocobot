@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
+import { API_USERS } from './API';
 
 function EditItem(props) {
     // Estados para los tres campos: descripción, storypoints, responsable
@@ -16,6 +17,18 @@ function EditItem(props) {
     const [newExpirationTS, setNewExpirationTS] = useState(
         props.expirationTS ? new Date(props.expirationTS).toISOString().split('T')[0] : ''
     );
+    const [developers, setDevelopers] = useState([]);
+
+    useEffect(() => {
+        fetch(API_USERS)
+            .then((response) => response.json()) 
+            .then((data) => {
+                setDevelopers(data); // Guarda la lista de desarrolladores en el estado
+            })
+            .catch((error) => {
+                console.error("Error fetching developers:", error);
+            });
+    }, []);
 
 
     const handleEdit = (e) => {
@@ -94,10 +107,15 @@ function EditItem(props) {
                         onChange={(e) => setNewAssigned(e.target.value)}
                         label="Assigned To"
                     >
-                        <MenuItem value="Francisco">Francisco</MenuItem>
-                        <MenuItem value="Saul">Saul</MenuItem>
-                        <MenuItem value="Facundo">Facundo</MenuItem>
-                        <MenuItem value="Alejandro">Alejandro</MenuItem>
+                        {developers.length > 0 ? (
+                            developers.map((developer) => (
+                                <MenuItem key={developer.id} value={developer.name}>
+                                    {developer.name}
+                                </MenuItem>
+                            ))
+                        ) : (
+                            <MenuItem disabled>No developers available</MenuItem>
+                        )}
                     </Select>
                 </FormControl>
 
