@@ -45,6 +45,13 @@ function App() {
     const [selectedSprint, setSelectedSprint] = useState('');
     const sprints = [...new Set(items.map(item => formatDate(item.expiration_TS)))];
 
+    function sortItemsByExpirationDate(items) {
+      // ordenar los items por su fecha de expiración
+      items.sort((a, b) => new Date(a.expiration_TS).getTime() - new Date(b.expiration_TS).getTime());
+
+      return items;
+  }
+
     function deleteItem(deleteId) {
       fetch(API_LIST + "/" + deleteId, {
         method: 'DELETE',
@@ -112,7 +119,7 @@ function App() {
                 'finished_TS': result.finished_TS,
                 'expiration_TS': result.expiration_TS
               } : x));
-            setItems(items2);
+            setItems(sortItemsByExpirationDate(items2));
           },
           (error) => {
             setError(error);
@@ -120,7 +127,7 @@ function App() {
     }
 
     function changeItemState(id, done) {
-        return fetch(API_LIST + `/${id}/done`, {
+        fetch(API_LIST + `/${id}/done`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
@@ -129,15 +136,20 @@ function App() {
                 "done": done,
             })
         })
-        .then(response => {
+        .then((response) => {
             if (response.ok) {
-                return response;
-            } else {
-                throw new Error('Something went wrong ... markItemDone');
+                return response.json();
             }
+            throw new Error('Something went wrong ...reloadOneItem');
+        })
+        .then(result => {
+            const newItems = items.map(item => (item.id === id ? result : item ));
+            setItems(sortItemsByExpirationDate(newItems));
+        }).catch((e) => {
+            setError(e);
         });
     }
-
+  
     function modifyItem(id, description, done, storyPoints, assigned, priority, estimated_Hours, expiration_TS) {
       var data = {
           "description": description,
@@ -410,23 +422,9 @@ function App() {
                 </AccordionDetails>
               </Accordion>
             ))}
-             {/* Sección de Estadísticas */}
-        <h2 style={{ marginTop: "30px" }}>Statistics</h2>
-        <Accordion>
-          <AccordionSummary
-            expandIcon={<ExpandMoreIcon />}
-            aria-controls="statistics-content"
-            id="statistics-header"
-          >
-            <Typography>View Statistics</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            {/* Aquí puedes incluir el componente de estadísticas o los datos que desees mostrar */}
+            {/* Sección de Estadísticas */}
+            <h2 style={{ marginTop: "30px" }}>Statistics</h2>
             <Estadisticas tasks={items} />
-          </AccordionDetails>
-        </Accordion>
-        
-
           </div>
         }
 
